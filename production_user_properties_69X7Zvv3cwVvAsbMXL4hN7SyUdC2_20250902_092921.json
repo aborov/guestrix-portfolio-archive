@@ -1,0 +1,535 @@
+{
+  "database": "production (default)",
+  "user_id": "69X7Zvv3cwVvAsbMXL4hN7SyUdC2",
+  "query_timestamp": "2025-09-02T09:29:21.464818",
+  "user_info": {
+    "updatedAt": "2025-08-25 18:39:35.392410+00:00",
+    "uid": "69X7Zvv3cwVvAsbMXL4hN7SyUdC2",
+    "phoneNumber": "+17065519895",
+    "isTemporary": false,
+    "role": "host",
+    "lastConsentAt": "2025-08-13 22:10:01.655510+00:00",
+    "createdAt": "2025-07-28 23:02:22.828522+00:00",
+    "hasDefaultPin": true,
+    "accountType": "permanent",
+    "pinCode": "9895",
+    "lastLoginAt": "2025-08-25 18:39:35.477000+00:00",
+    "id": "69X7Zvv3cwVvAsbMXL4hN7SyUdC2"
+  },
+  "properties": [
+    {
+      "hostId": "69X7Zvv3cwVvAsbMXL4hN7SyUdC2",
+      "description": "This Jersey City property offers a convenient base for exploring the area, with straightforward access to New York City. Experience the benefits of this vibrant location, providing a comfortable and accessible stay.",
+      "new": true,
+      "houseRules": [],
+      "id": "21d2f880-e7ee-4a96-886d-efc9e147af09",
+      "setupProgress": {
+        "step3_emergency": false,
+        "step5_review": false,
+        "step2_rules": false,
+        "step1_basic": false,
+        "step4_facts": false
+      },
+      "airbnbListingUrl": "https://www.airbnb.com/rooms/805101174500101207",
+      "checkOutTime": "11:00",
+      "updatedAt": "2025-08-13 22:21:48.801852+00:00",
+      "status": "inactive",
+      "name": "Cozy Home in Jersey City - Minutes to NYC",
+      "checkInTime": "15:00",
+      "icalUrl": "",
+      "createdAt": "2025-08-13 22:21:48.801852+00:00",
+      "address": "Jersey City, New Jersey, United States",
+      "amenities": {
+        "basic": [
+          "Lock on bedroom door",
+          "Kitchen",
+          "Wifi",
+          "Dedicated workspace",
+          "Air conditioning",
+          "Luggage dropoff allowed",
+          "Exterior security cameras on property",
+          "Cleaning products",
+          "Shampoo",
+          "Conditioner",
+          "Body soap",
+          "Hot water",
+          "Shower gel",
+          "Essentials",
+          "Hangers",
+          "Bed linens",
+          "Extra pillows and blankets",
+          "Room-darkening shades",
+          "Iron",
+          "Clothing storage: closet and dresser",
+          "Books and reading material",
+          "Board games",
+          "Radiant heating",
+          "Smoke alarm",
+          "Carbon monoxide alarm",
+          "Fire extinguisher",
+          "First aid kit",
+          "Cooking basics",
+          "Dishes and silverware",
+          "Hot water kettle",
+          "Wine glasses",
+          "Baking sheet",
+          "Dining table",
+          "Coffee",
+          "Laundromat nearby",
+          "Paid parking on premises",
+          "Self check-in",
+          "Keypad",
+          "Cleaning available during stay"
+        ],
+        "appliances": [
+          "TV",
+          "Refrigerator",
+          "Microwave",
+          "Freezer",
+          "Gas stove",
+          "Oven",
+          "Coffee maker (drip)",
+          "Blender"
+        ]
+      },
+      "wifiDetails": {
+        "password": "",
+        "network": ""
+      },
+      "importData": {
+        "rawData": {
+          "house_rules": [],
+          "listing": {
+            "title": "Cozy Home in Jersey City - Minutes to NYC",
+            "image": "https://a0.muscache.com/pictures/airbnb-platform-assets/AirbnbPlatformAssets-ActivitySetup/original/0d5983b1-af08-446a-abb3-504cf2d72944.png?im_w=240&im_h=240",
+            "property_type": "Condo",
+            "location": "Jersey City, New Jersey, United States",
+            "url": "https://www.airbnb.com/rooms/805101174500101207?source_impression_id=p3_1755123674_P3dOf3Z7cAxhfPL5"
+          },
+          "extracted": {
+            "description": "This listing is located in Jersey City, New Jersey, offering easy access to New York City. The property provides a comfortable and convenient stay, perfect for exploring the area. Guests can enjoy a range of amenities, including a well-equipped kitchen, dedicated workspace, and modern appliances.  Paid parking is available on the premises.",
+            "practical_facts": [],
+            "house_rules": [],
+            "checkInTime": "N/A",
+            "local_area": [],
+            "amenities": {
+              "basic": [
+                "Lock on bedroom door",
+                "Kitchen",
+                "Wifi",
+                "Dedicated workspace",
+                "Air conditioning",
+                "Luggage dropoff allowed",
+                "Exterior security cameras on property",
+                "Cleaning products",
+                "Shampoo",
+                "Conditioner",
+                "Body soap",
+                "Hot water",
+                "Shower gel",
+                "Essentials",
+                "Hangers",
+                "Bed linens",
+                "Extra pillows and blankets",
+                "Room-darkening shades",
+                "Iron",
+                "Clothing storage: closet and dresser",
+                "Books and reading material",
+                "Board games",
+                "Radiant heating",
+                "Smoke alarm",
+                "Carbon monoxide alarm",
+                "Fire extinguisher",
+                "First aid kit",
+                "Cooking basics",
+                "Dishes and silverware",
+                "Hot water kettle",
+                "Wine glasses",
+                "Baking sheet",
+                "Dining table",
+                "Coffee",
+                "Laundromat nearby",
+                "Paid parking on premises",
+                "Self check-in",
+                "Keypad",
+                "Cleaning available during stay"
+              ],
+              "appliances": [
+                "TV",
+                "Refrigerator",
+                "Microwave",
+                "Freezer",
+                "Gas stove",
+                "Oven",
+                "Coffee maker (drip)",
+                "Blender"
+              ]
+            },
+            "checkin_checkout": {
+              "checkin_time": "",
+              "checkout_instructions": "",
+              "checkin_instructions": "",
+              "checkout_time": ""
+            },
+            "checkOutTime": "N/A",
+            "safety_info": []
+          }
+        },
+        "extractedAt": "2025-08-13T22:21:48.801774",
+        "source": "airbnb"
+      }
+    },
+    {
+      "hostId": "69X7Zvv3cwVvAsbMXL4hN7SyUdC2",
+      "description": "This Jersey City duplex provides a private patio and a fully fenced backyard with a fire pit for outdoor enjoyment. Located just minutes from New York, it offers a comfortable base for exploring the area.",
+      "finalSetupData": {
+        "propertyFacts": [],
+        "houseRules": [],
+        "basicInfo": {
+          "description": "This Jersey City duplex provides a private patio and a fully fenced backyard with a fire pit for outdoor enjoyment. Located just minutes from New York, it offers a comfortable base for exploring the area.",
+          "icalUrl": "https://www.airbnb.com/calendar/ical/1376252243023110567.ics?s=afd260cb47e4a62730f56c51a3fd1db1",
+          "checkInTime": "15:00",
+          "address": "6 Metrotech Center, Brooklyn, NY 11201.",
+          "checkOutTime": "11:00",
+          "wifiDetails": {
+            "password": "rettryrt",
+            "network": "MyWIFI"
+          },
+          "amenities": {
+            "appliances": [
+              {
+                "model": "",
+                "brand": "",
+                "location": "",
+                "name": "TV"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Refrigerator"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Microwave"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Freezer"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Gas stove"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Oven"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Coffee maker"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "Kitchen",
+                "name": "Blender"
+              },
+              {
+                "model": "",
+                "brand": "",
+                "location": "",
+                "name": "Bluetooth sound system"
+              }
+            ],
+            "basic": [
+              "Kitchen",
+              "WiFi",
+              "Dedicated workspace",
+              "Central air conditioning",
+              "Patio",
+              "Balcony",
+              "Private backyard",
+              "Fire pit",
+              "Cleaning products",
+              "Shampoo",
+              "Conditioner",
+              "Body soap",
+              "Hot water",
+              "Shower gel",
+              "Essentials",
+              "Hangers",
+              "Bed linens",
+              "Extra pillows and blankets",
+              "Room-darkening shades",
+              "Iron",
+              "Clothing storage",
+              "Central heating",
+              "Smoke alarm",
+              "Carbon monoxide alarm",
+              "Fire extinguisher",
+              "First aid kit",
+              "Cooking basics",
+              "Dishes and silverware",
+              "Hot water kettle",
+              "Wine glasses",
+              "Baking sheet",
+              "Coffee",
+              "Private entrance",
+              "Laundromat nearby",
+              "Outdoor furniture",
+              "Hammock",
+              "Long term stays allowed",
+              "Self check-in",
+              "Smart lock",
+              "Free parking on premises"
+            ]
+          },
+          "name": "Comfortable Duplex near NYC"
+        },
+        "emergencyInfo": []
+      },
+      "houseRules": [],
+      "id": "b5415fab-eb7f-48f9-af2e-660a227a78e3",
+      "setupProgress": {
+        "step3_emergency": true,
+        "step5_review": true,
+        "step2_rules": true,
+        "step1_basic": true,
+        "step4_facts": true
+      },
+      "new": false,
+      "magicLinkToken": "nExnEVrZax0RFFCuHMcysocLBtjM65GGD9KE",
+      "airbnbListingUrl": "https://www.airbnb.com/rooms/736798473445832624",
+      "checkOutTime": "11:00",
+      "updatedAt": "2025-08-14 07:41:46.043224+00:00",
+      "status": "active",
+      "name": "Comfortable Duplex near NYC",
+      "propertyFacts": [],
+      "emergencyInfo": [],
+      "setupCompletedAt": "2025-08-14T07:41:46.043106",
+      "checkInTime": "15:00",
+      "icalUrl": "https://www.airbnb.com/calendar/ical/1376252243023110567.ics?s=afd260cb47e4a62730f56c51a3fd1db1",
+      "createdAt": "2025-08-13 22:15:53.322512+00:00",
+      "address": "6 Metrotech Center, Brooklyn, NY 11201.",
+      "magicLinkCreatedAt": "2025-08-14 07:41:45.981827+00:00",
+      "amenities": {
+        "appliances": [
+          {
+            "model": "",
+            "brand": "",
+            "location": "",
+            "name": "TV"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Refrigerator"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Microwave"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Freezer"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Gas stove"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Oven"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Coffee maker"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "Kitchen",
+            "name": "Blender"
+          },
+          {
+            "model": "",
+            "brand": "",
+            "location": "",
+            "name": "Bluetooth sound system"
+          }
+        ],
+        "basic": [
+          "Kitchen",
+          "WiFi",
+          "Dedicated workspace",
+          "Central air conditioning",
+          "Patio",
+          "Balcony",
+          "Private backyard",
+          "Fire pit",
+          "Cleaning products",
+          "Shampoo",
+          "Conditioner",
+          "Body soap",
+          "Hot water",
+          "Shower gel",
+          "Essentials",
+          "Hangers",
+          "Bed linens",
+          "Extra pillows and blankets",
+          "Room-darkening shades",
+          "Iron",
+          "Clothing storage",
+          "Central heating",
+          "Smoke alarm",
+          "Carbon monoxide alarm",
+          "Fire extinguisher",
+          "First aid kit",
+          "Cooking basics",
+          "Dishes and silverware",
+          "Hot water kettle",
+          "Wine glasses",
+          "Baking sheet",
+          "Coffee",
+          "Private entrance",
+          "Laundromat nearby",
+          "Outdoor furniture",
+          "Hammock",
+          "Long term stays allowed",
+          "Self check-in",
+          "Smart lock",
+          "Free parking on premises"
+        ]
+      },
+      "wifiDetails": {
+        "password": "rettryrt",
+        "network": "MyWIFI"
+      },
+      "importData": {
+        "rawData": {
+          "house_rules": [],
+          "listing": {
+            "title": "Comfortable Duplex near NYC",
+            "image": "https://a0.muscache.com/pictures/airbnb-platform-assets/AirbnbPlatformAssets-ActivitySetup/original/0d5983b1-af08-446a-abb3-504cf2d72944.png?im_w=240&im_h=240",
+            "property_type": "Condo",
+            "location": "Jersey City, New Jersey, United States",
+            "url": "https://www.airbnb.com/rooms/736798473445832624?source_impression_id=p3_1755123317_P3Yb06M-HyyrYW6H"
+          },
+          "extracted": {
+            "description": "This Jersey City duplex offers comfortable accommodation with modern amenities. Enjoy a well-equipped kitchen, dedicated workspace, and central air conditioning. Relax on the private patio or balcony, or unwind in the fully fenced backyard with a fire pit. Includes essentials like cleaning products, shampoo, and fresh linens. Conveniently located minutes from NY.",
+            "practical_facts": [],
+            "house_rules": [],
+            "checkInTime": "N/A",
+            "local_area": [],
+            "amenities": {
+              "basic": [
+                "Kitchen",
+                "WiFi",
+                "Dedicated workspace",
+                "Central air conditioning",
+                "Patio",
+                "Balcony",
+                "Private backyard",
+                "Fire pit",
+                "Cleaning products",
+                "Shampoo",
+                "Conditioner",
+                "Body soap",
+                "Hot water",
+                "Shower gel",
+                "Essentials",
+                "Hangers",
+                "Bed linens",
+                "Extra pillows and blankets",
+                "Room-darkening shades",
+                "Iron",
+                "Clothing storage",
+                "Central heating",
+                "Smoke alarm",
+                "Carbon monoxide alarm",
+                "Fire extinguisher",
+                "First aid kit",
+                "Cooking basics",
+                "Dishes and silverware",
+                "Hot water kettle",
+                "Wine glasses",
+                "Baking sheet",
+                "Coffee",
+                "Private entrance",
+                "Laundromat nearby",
+                "Outdoor furniture",
+                "Hammock",
+                "Long term stays allowed",
+                "Self check-in",
+                "Smart lock",
+                "Free parking on premises"
+              ],
+              "appliances": [
+                {
+                  "name": "TV"
+                },
+                {
+                  "name": "Refrigerator"
+                },
+                {
+                  "name": "Microwave"
+                },
+                {
+                  "name": "Freezer"
+                },
+                {
+                  "name": "Gas stove"
+                },
+                {
+                  "name": "Oven"
+                },
+                {
+                  "name": "Coffee maker"
+                },
+                {
+                  "name": "Blender"
+                },
+                {
+                  "name": "Bluetooth sound system"
+                }
+              ]
+            },
+            "checkin_checkout": {
+              "checkin_time": "",
+              "checkout_instructions": "",
+              "checkin_instructions": "",
+              "checkout_time": ""
+            },
+            "checkOutTime": "N/A",
+            "safety_info": []
+          }
+        },
+        "extractedAt": "2025-08-13T22:15:53.322443",
+        "source": "airbnb"
+      }
+    }
+  ],
+  "total_properties": 2
+}

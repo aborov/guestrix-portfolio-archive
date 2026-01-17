@@ -1,0 +1,10 @@
+api_key: guestrix_key_local_testing_only_not_for_production
+api_secret: guestrix_secret_local_testing_only_not_for_production
+ws_url: ws://livekit:7890
+redis:
+  address: localhost:6379
+sip_port: 8090
+rtp_port: 10200-10300
+use_external_ip: false
+logging:
+  level: info

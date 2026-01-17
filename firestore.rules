@@ -1,0 +1,296 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role[role] in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role);
+    }
+    
+    function hasAnyRole(roles) {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in roles ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.keys().hasAny(roles));
+    }
+    
+    function isAdmin() {
+      return hasAnyRole(['admin', 'super_admin']);
+    }
+    
+    function isHost() {
+      return hasAnyRole(['host', 'admin', 'super_admin']);
+    }
+    
+    function isGuest() {
+      return hasAnyRole(['guest', 'host', 'admin', 'super_admin']);
+    }
+    
+    function isTemporaryUser() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isTemporary == true;
+    }
+    
+    function isPermanentUser() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isTemporary != true;
+    }
+    
+    function hasPropertyAccess(propertyId) {
+      return isAuthenticated() && (
+        // User owns the property
+        get(/databases/$(database)/documents/properties/$(propertyId)).data.hostId == request.auth.uid ||
+        // User has property in their propertyIds array
+        request.auth.uid in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.propertyIds ||
+        // User is admin
+        isAdmin()
+      );
+    }
+    
+    function hasReservationAccess(reservationId) {
+      return isAuthenticated() && (
+        // User has reservation in their reservationIds array
+        reservationId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.reservationIds ||
+        // User owns the property for this reservation
+        hasPropertyAccess(get(/databases/$(database)/documents/reservations/$(reservationId)).data.propertyId) ||
+        // User is admin
+        isAdmin()
+      );
+    }
+    
+    function isValidTimestamp() {
+      return request.time > timestamp.date(2020, 1, 1);
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own data
+      allow read: if isOwner(userId);
+      
+      // Users can create their own account
+      allow create: if isOwner(userId) && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['uid', 'createdAt']) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.createdAt == request.time;
+      
+      // Users can update their own data (limited fields)
+      allow update: if isOwner(userId) && 
+        isValidTimestamp() &&
+        // Prevent role escalation unless admin
+        (isAdmin() || request.resource.data.role == resource.data.role) &&
+        // Prevent changing critical fields unless admin
+        (isAdmin() || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isTemporary', 'accountType', 'accessLevel']));
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // Properties collection
+    match /properties/{propertyId} {
+      // Anyone can read properties (for guest access)
+      allow read: if isAuthenticated();
+      
+      // Only hosts and admins can create properties
+      allow create: if isHost() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['hostId', 'createdAt']) &&
+        (request.resource.data.hostId == request.auth.uid || isAdmin());
+      
+      // Only property owners and admins can update
+      allow update: if hasPropertyAccess(propertyId) && 
+        isValidTimestamp() &&
+        // Prevent changing hostId unless admin
+        (isAdmin() || request.resource.data.hostId == resource.data.hostId);
+      
+      // Only property owners and admins can delete
+      allow delete: if hasPropertyAccess(propertyId);
+    }
+    
+    // Reservations collection
+    match /reservations/{reservationId} {
+      // Users can read reservations they have access to
+      allow read: if hasReservationAccess(reservationId);
+      
+      // Only admins and system can create reservations
+      allow create: if isAdmin() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['propertyId', 'createdAt']);
+      
+      // Only admins can update reservations
+      allow update: if isAdmin() && isValidTimestamp();
+      
+      // Only admins can delete reservations
+      allow delete: if isAdmin();
+    }
+    
+    // Knowledge sources collection
+    match /knowledge_sources/{sourceId} {
+      // Users can read knowledge sources for properties they have access to
+      allow read: if isAuthenticated() && 
+        hasPropertyAccess(resource.data.propertyId);
+      
+      // Only hosts and admins can create knowledge sources
+      allow create: if isHost() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['propertyId', 'createdAt']) &&
+        hasPropertyAccess(request.resource.data.propertyId);
+      
+      // Only property owners and admins can update
+      allow update: if hasPropertyAccess(resource.data.propertyId) && 
+        isValidTimestamp() &&
+        // Prevent changing propertyId unless admin
+        (isAdmin() || request.resource.data.propertyId == resource.data.propertyId);
+      
+      // Only property owners and admins can delete
+      allow delete: if hasPropertyAccess(resource.data.propertyId);
+    }
+    
+    // Knowledge items collection
+    match /knowledge_items/{itemId} {
+      // Users can read knowledge items for properties they have access to
+      allow read: if isAuthenticated() && 
+        hasPropertyAccess(resource.data.propertyId);
+      
+      // Only hosts and admins can create knowledge items
+      allow create: if isHost() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['propertyId', 'createdAt']) &&
+        hasPropertyAccess(request.resource.data.propertyId);
+      
+      // Only property owners and admins can update
+      allow update: if hasPropertyAccess(resource.data.propertyId) && 
+        isValidTimestamp() &&
+        // Prevent changing propertyId unless admin
+        (isAdmin() || request.resource.data.propertyId == resource.data.propertyId);
+      
+      // Only property owners and admins can delete
+      allow delete: if hasPropertyAccess(resource.data.propertyId);
+    }
+    
+    // Conversations collection
+    match /conversations/{conversationId} {
+      // Users can read conversations for properties they have access to
+      allow read: if isAuthenticated() && 
+        hasPropertyAccess(resource.data.propertyId);
+      
+      // Authenticated users can create conversations
+      allow create: if isAuthenticated() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['propertyId', 'timestamp']) &&
+        hasPropertyAccess(request.resource.data.propertyId);
+      
+      // Only admins can update conversations
+      allow update: if isAdmin() && isValidTimestamp();
+      
+      // Only admins can delete conversations
+      allow delete: if isAdmin();
+    }
+    
+    // Wizard progress collection
+    match /wizard_progress/{userId} {
+      // Users can read their own wizard progress
+      allow read: if isOwner(userId);
+      
+      // Users can create their own wizard progress
+      allow create: if isOwner(userId) && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['userId', 'createdAt']) &&
+        request.resource.data.userId == userId;
+      
+      // Users can update their own wizard progress
+      allow update: if isOwner(userId) && 
+        isValidTimestamp() &&
+        request.resource.data.userId == resource.data.userId;
+      
+      // Users can delete their own wizard progress
+      allow delete: if isOwner(userId);
+    }
+    
+    // Magic links collection (for temporary access)
+    match /magic_links/{linkId} {
+      // Only admins can read magic links
+      allow read: if isAdmin();
+      
+      // Only admins can create magic links
+      allow create: if isAdmin() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['token', 'createdAt']);
+      
+      // Only admins can update magic links
+      allow update: if isAdmin() && isValidTimestamp();
+      
+      // Only admins can delete magic links
+      allow delete: if isAdmin();
+    }
+    
+    // Temporary users collection
+    match /temp_users/{tempUserId} {
+      // Only admins can read temporary users
+      allow read: if isAdmin();
+      
+      // System can create temporary users (for magic link flow)
+      allow create: if isAuthenticated() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['createdAt']);
+      
+      // Only admins can update temporary users
+      allow update: if isAdmin() && isValidTimestamp();
+      
+      // Only admins can delete temporary users
+      allow delete: if isAdmin();
+    }
+    
+    // Vector embeddings collection (for RAG system)
+    match /vector_embeddings/{embeddingId} {
+      // Users can read embeddings for properties they have access to
+      allow read: if isAuthenticated() && 
+        hasPropertyAccess(resource.data.propertyId);
+      
+      // Only hosts and admins can create embeddings
+      allow create: if isHost() && 
+        isValidTimestamp() &&
+        request.resource.data.keys().hasAll(['propertyId', 'createdAt']) &&
+        hasPropertyAccess(request.resource.data.propertyId);
+      
+      // Only property owners and admins can update
+      allow update: if hasPropertyAccess(resource.data.propertyId) && 
+        isValidTimestamp();
+      
+      // Only property owners and admins can delete
+      allow delete: if hasPropertyAccess(resource.data.propertyId);
+    }
+    
+    // Knowledge base collection (legacy)
+    match /knowledge_base/{docId} {
+      // Only admins can access knowledge base
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny rule for any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+

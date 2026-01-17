@@ -1,0 +1,16 @@
+[Unit]
+Description=WebSocket Server for Telnyx Phone Calls
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/app
+Environment=PATH=/app/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/app/venv/bin/python3 /app/websocket_server/server.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/websocket-server.log
+StandardError=append:/var/log/websocket-server.error.log
+
+[Install]
+WantedBy=multi-user.target

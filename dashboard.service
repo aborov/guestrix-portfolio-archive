@@ -1,0 +1,15 @@
+[Unit]
+Description=Guestrix Flask Web Dashboard
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/app/dashboard
+Environment=PATH=/app/dashboard/venv/bin
+ExecStart=/app/dashboard/venv/bin/gunicorn -c /app/dashboard/gunicorn.conf.py wsgi:application
+Restart=always
+StandardOutput=append:/var/log/dashboard.log
+StandardError=append:/var/log/dashboard.error.log
+
+[Install]
+WantedBy=multi-user.target

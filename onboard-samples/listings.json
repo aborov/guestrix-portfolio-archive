@@ -1,0 +1,642 @@
+[
+  {
+    "listings": [
+      {
+        "amenities": [
+          "tv",
+          "wireless_internet",
+          "ac",
+          "kitchen",
+          "free_parking",
+          "heating",
+          "washer",
+          "dryer",
+          "smoke_detector",
+          "carbon_monoxide_detector",
+          "shampoo",
+          "hangers",
+          "hair_dryer",
+          "iron",
+          "laptop_friendly_workspace",
+          "self_checkin",
+          "keypad",
+          "private_entrance",
+          "bathtub",
+          "room_darkening_shades",
+          "hot_water",
+          "body_soap",
+          "bed_linens",
+          "microwave",
+          "coffee_maker",
+          "refrigerator",
+          "dishwasher",
+          "dishes_and_silverware",
+          "cooking_basics",
+          "oven",
+          "stove",
+          "bbq_area",
+          "patio_or_belcony",
+          "garden_or_backyard",
+          "alfresco_dining",
+          "sound_system",
+          "fire_pit",
+          "exercise_equipment",
+          "dining_table",
+          "toaster",
+          "outdoor_seating",
+          "freezer",
+          "blender",
+          "books",
+          "coffee",
+          "patio",
+          "shower_gel",
+          "barbeque_utensils",
+          "conditioner",
+          "wardrobe_or_closet",
+          "wine_glasses"
+        ],
+        "bathroomType": "private",
+        "country": "US",
+        "hostUserId": 13734172,
+        "rooms": [
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "HANGERS",
+              "IRON",
+              "ROOM_DARKENING_SHADES",
+              "BED_LINENS",
+              "WARDROBE_OR_CLOSET",
+              "QUEEN_BED"
+            ],
+            "roomNumber": 1,
+            "id": 659794807,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "BEDROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "HANGERS",
+              "ROOM_DARKENING_SHADES",
+              "BED_LINENS",
+              "WARDROBE_OR_CLOSET",
+              "QUEEN_BED"
+            ],
+            "roomNumber": 2,
+            "id": 659794808,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "BEDROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "HANGERS",
+              "ROOM_DARKENING_SHADES",
+              "BED_LINENS",
+              "WARDROBE_OR_CLOSET",
+              "BUNK_BED"
+            ],
+            "roomNumber": 3,
+            "id": 659794809,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "BEDROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "SHAMPOO",
+              "HAIR_DRYER",
+              "BATHTUB",
+              "HOT_WATER",
+              "BODY_SOAP",
+              "SHOWER_GEL",
+              "CONDITIONER"
+            ],
+            "roomNumber": 1000000,
+            "id": 659794810,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "FULL_BATHROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "SHAMPOO",
+              "HOT_WATER",
+              "BODY_SOAP",
+              "SHOWER_GEL",
+              "CONDITIONER"
+            ],
+            "roomNumber": 1000001,
+            "id": 659794811,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "FULL_BATHROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "SHAMPOO",
+              "HOT_WATER",
+              "BODY_SOAP",
+              "SHOWER_GEL",
+              "CONDITIONER"
+            ],
+            "roomNumber": 1000002,
+            "id": 659794812,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "HALF_BATHROOM"
+          },
+          {
+            "amenities": [
+              "MICROWAVE",
+              "COFFEE_MAKER",
+              "REFRIGERATOR",
+              "DISHWASHER",
+              "DISHES_AND_SILVERWARE",
+              "COOKING_BASICS",
+              "OVEN",
+              "STOVE",
+              "TOASTER",
+              "FREEZER",
+              "BLENDER",
+              "COFFEE",
+              "WINE_GLASSES"
+            ],
+            "roomNumber": 1000004,
+            "id": 659834407,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "KITCHEN"
+          },
+          {
+            "roomNumber": 1000003,
+            "id": 659834408,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "EXTERIOR"
+          },
+          {
+            "amenities": [
+              "AC",
+              "HEATING",
+              "DINING_TABLE",
+              "WINE_GLASSES"
+            ],
+            "roomNumber": 1000006,
+            "id": 659842975,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "DINING_ROOM"
+          },
+          {
+            "amenities": [
+              "WASHER",
+              "DRYER"
+            ],
+            "roomNumber": 1000008,
+            "id": 659842976,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "LAUNDRY_ROOM"
+          },
+          {
+            "amenities": [
+              "TV",
+              "AC",
+              "HEATING",
+              "SOUND_SYSTEM",
+              "EXERCISE_EQUIPMENT",
+              "BOOKS"
+            ],
+            "roomNumber": 1000005,
+            "id": 659842977,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "LIVING_ROOM"
+          },
+          {
+            "amenities": [
+              "AC",
+              "LAPTOP_FRIENDLY_WORKSPACE"
+            ],
+            "roomNumber": 1000007,
+            "id": 659842978,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "WORKSPACE"
+          },
+          {
+            "roomNumber": 1000010,
+            "id": 660309255,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "ART_STUDIO"
+          },
+          {
+            "amenities": [
+              "EXERCISE_EQUIPMENT"
+            ],
+            "roomNumber": 1000011,
+            "id": 660309873,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "GYM"
+          },
+          {
+            "roomNumber": 1000012,
+            "id": 660310365,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "EVENT_ROOM"
+          },
+          {
+            "amenities": [
+              "PRIVATE_ENTRANCE"
+            ],
+            "roomNumber": 1000013,
+            "id": 660310504,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "FRONT_YARD"
+          },
+          {
+            "amenities": [
+              "AC",
+              "BBQ_AREA",
+              "PATIO_OR_BELCONY",
+              "GARDEN_OR_BACKYARD",
+              "ALFRESCO_DINING",
+              "FIRE_PIT",
+              "OUTDOOR_SEATING",
+              "BARBEQUE_UTENSILS"
+            ],
+            "roomNumber": 1000015,
+            "id": 660310839,
+            "listingId": 1376252243023110567,
+            "isPrivate": true,
+            "roomType": "PATIO"
+          }
+        ],
+        "availableByDefault": true,
+        "petsAllowed": false,
+        "city": "Chicago",
+        "precision": "building",
+        "infantsAllowed": true,
+        "streetNative": "IL",
+        "language": "en",
+        "userDefinedLocation": true,
+        "photos": [
+          {
+            "name": "acf0a8eb-249c-4acc-8711-86dac1e77831.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741904026.000000000
+          },
+          {
+            "name": "b53aa815-20aa-48cf-8b1f-d27c89f3d4f8.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535127.000000000
+          },
+          {
+            "name": "9f2843be-d657-413b-88b5-af851317a602.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535154.000000000
+          },
+          {
+            "name": "0eac4baa-7c37-436d-a907-f8ca273110e1.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535131.000000000
+          },
+          {
+            "name": "fc3c837e-a05a-45e0-977e-35f93808e430.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903888.000000000
+          },
+          {
+            "name": "22dc1def-2282-416e-bbf8-1a6f1cd4d4d4.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741904082.000000000
+          },
+          {
+            "name": "02cac7c7-1ceb-4cbe-b688-ac1378a2669e.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741904077.000000000
+          },
+          {
+            "name": "46dbde73-de3c-4cd2-ad16-89dcbe7b9641.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741899460.000000000
+          },
+          {
+            "name": "f47731ad-3df8-4730-a35b-be6f82b87ffa.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741899460.000000000
+          },
+          {
+            "name": "4b541b05-f42a-4f94-9e29-d5ad3f671e4b.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741899767.000000000
+          },
+          {
+            "name": "96d7960d-ff6a-4b1c-b52d-9bbc7ad3b334.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903854.000000000
+          },
+          {
+            "name": "ed550357-e793-48dd-a91a-a86be85b6445.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741899459.000000000
+          },
+          {
+            "name": "ac8f408c-81bd-432d-a1cd-7eb2d538b45b.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903856.000000000
+          },
+          {
+            "name": "e211e7e1-7bd6-4fda-a3ed-040864373ab1.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903857.000000000
+          },
+          {
+            "name": "2cb89604-974a-4c43-a739-664d81d529be.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903858.000000000
+          },
+          {
+            "name": "6a8817a1-1180-4063-aab4-fc6bed593bb4.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903859.000000000
+          },
+          {
+            "name": "080e8663-a73f-4213-8ae9-13fd1810e4d7.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903993.000000000
+          },
+          {
+            "name": "48c5a04e-f9be-40a4-b70b-84d07a52f421.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903884.000000000
+          },
+          {
+            "name": "e9265932-a8b3-4c28-9b33-d4579fe6c21a.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903886.000000000
+          },
+          {
+            "name": "e18b177f-2d36-452c-838e-ab788d51f18b.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903889.000000000
+          },
+          {
+            "name": "4f12f45f-e96e-4d71-8b5c-6dd08128c475.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903890.000000000
+          },
+          {
+            "name": "3cec5ee8-8a5f-4824-94d7-6ef59fe81488.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903905.000000000
+          },
+          {
+            "name": "2585195b-fc1b-4a9e-bea8-4cb1ae7a9372.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1741903917.000000000
+          },
+          {
+            "name": "0f609a30-d37b-4b1e-8b8c-59cf8a1ce3f3.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535117.000000000
+          },
+          {
+            "name": "5a313183-2e22-4871-a5a9-8a70552f6c03.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535118.000000000
+          },
+          {
+            "name": "54ef9764-5446-42e8-b9a1-ea4cdf90d923.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535119.000000000
+          },
+          {
+            "name": "4198d832-3c77-4cad-9715-1bcc961609af.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535120.000000000
+          },
+          {
+            "name": "cd1fd382-669a-41bb-ad47-89bd68be08d3.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535121.000000000
+          },
+          {
+            "name": "39a3a737-f82b-492a-9939-114d19949afa.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535122.000000000
+          },
+          {
+            "name": "dd5ceb36-f6d9-4d1d-b6b7-cdcf0234f980.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535123.000000000
+          },
+          {
+            "name": "d14ee0d4-de8f-4c0d-83b3-c6f13ccdb682.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535124.000000000
+          },
+          {
+            "name": "f5fc1c7f-a055-4b1d-a7c6-0f2488cff845.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535125.000000000
+          },
+          {
+            "name": "ffce5086-9bc6-402e-884b-5facce9a5911.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535126.000000000
+          },
+          {
+            "name": "2e65e4cd-855a-4177-aa4f-148483336b02.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535128.000000000
+          },
+          {
+            "name": "dfc24ed2-8db0-41ff-8209-9356c2d34e65.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535129.000000000
+          },
+          {
+            "name": "4bb6723f-554e-43fa-8fa6-237566e133ff.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535130.000000000
+          },
+          {
+            "name": "72db5859-ffcd-4af5-abbf-d016da80afb4.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535132.000000000
+          },
+          {
+            "name": "59d6d115-9677-4a68-861b-91d1c50b6aa1.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535133.000000000
+          },
+          {
+            "name": "7cc9e391-9d81-47dd-bd4e-b3909c595bb7.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535134.000000000
+          },
+          {
+            "name": "361eafc3-eb75-4733-a726-e46e4166e823.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535135.000000000
+          },
+          {
+            "name": "e32930b2-e095-4d57-bfab-8877ba4b2a0a.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535136.000000000
+          },
+          {
+            "name": "38a37185-7c0a-4d9b-a4b5-825dea9b0a33.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535140.000000000
+          },
+          {
+            "name": "831c804f-e42c-4413-b7bf-dfa3b4fb5be0.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535144.000000000
+          },
+          {
+            "name": "c414fbfe-9869-45c3-be92-d1da65869266.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535148.000000000
+          },
+          {
+            "name": "c6e9cbbb-4f93-4329-bc2c-5885ded31983.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535151.000000000
+          },
+          {
+            "name": "9a96e9cf-0913-4cfe-aaa7-f2a5fabe9f48.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535157.000000000
+          },
+          {
+            "name": "fedf417a-fed8-4842-89ab-36d79c5ebea8.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535161.000000000
+          },
+          {
+            "name": "c0b5c964-3bcc-4e12-ad75-a68bff78c81b.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535164.000000000
+          },
+          {
+            "name": "76ab629b-9652-4c8e-bb70-aeee6f881adb.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535168.000000000
+          },
+          {
+            "name": "bd259bd3-0264-4147-95e7-bf04bb894c3e.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535172.000000000
+          },
+          {
+            "name": "18b8bb5f-d5a5-4bfb-ac77-73d88312ac86.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535175.000000000
+          },
+          {
+            "name": "9cc11dd5-8372-4df7-82e5-71b0d7b4bc48.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535178.000000000
+          },
+          {
+            "name": "2ebc67bc-666d-4a17-8566-5a8b640eeaf3.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535183.000000000
+          },
+          {
+            "name": "4924e2bf-4b06-41ba-bdb9-e398340d29b4.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535187.000000000
+          },
+          {
+            "name": "3eb55a84-3371-4e8f-8503-3c6e876df18d.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535191.000000000
+          },
+          {
+            "name": "a1910bf7-2605-4263-8a27-b38c171e301e.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535194.000000000
+          },
+          {
+            "name": "e23ecdfd-cac3-467f-ae42-644db9d644c0.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535198.000000000
+          },
+          {
+            "name": "dbfa428e-f0f8-4a72-84c9-ce8f78f922a2.jpeg",
+            "fileType": "UNDEFINED",
+            "createdAt": 1743535201.000000000
+          }
+        ],
+        "personCapacity": 6,
+        "childrenAlloewd": true,
+        "smokingAllowed": false,
+        "formattedAddress": "2425 W Lyndale St, Chicago, IL 60647, USA",
+        "street": "2425 West Lyndale Street",
+        "propertyType": "House",
+        "nickname": "Bucktown",
+        "cityNative": "Chicago",
+        "expectations": [
+          {
+            "listingId": 1376252243023110567,
+            "expectationType": "surveillance",
+            "locale": "en",
+            "addedDetails": "Doorbell camera ",
+            "hasExpectation": true
+          }
+        ],
+        "id": 1376252243023110567,
+        "state": "IL",
+        "lat": 41.922186606214694,
+        "roomType": "Entire home/apt",
+        "eventsAllowed": false,
+        "lng": -87.68809717354125,
+        "bathrooms": 2.5,
+        "bedrooms": 3,
+        "zipcode": "60647",
+        "license": "R25000125684",
+        "directions": "",
+        "instantBookLeadTimeHours": 15,
+        "displayExactLocation": true,
+        "neighborhood": "Logan Square",
+        "beds": 4,
+        "listingDescriptions": [
+          {
+            "summary": "Welcome to Bucktown! This bright, two-floor modern home has 3 bedrooms, 2.5 bathrooms, an open space living room, full dining room, full kitchen with s/s appliances, exercise equipment, and a large private patio w/ a fire pit.\n\nMaster suite features exposed brick, natural light, and a deck w/ comfy seating. Our home sits in the middle of a quiet, safe block w/ smart locks and thermostats keep things convenient, and you’ll love being walking distance from the train. \n\nWe can\u0027t wait to host you!",
+            "tier": "MARKETPLACE",
+            "name": "Lovely Family Home in Bucktown close to CTA Train",
+            "description": "Welcome to Bucktown! This bright, two-floor modern home has 3 bedrooms, 2.5 bathrooms, an open space living room, full dining room, full kitchen with s/s appliances, exercise equipment, and a large private patio w/ a fire pit.\n\nMaster suite features exposed brick, natural light, and a deck w/ comfy seating. Our home sits in the middle of a quiet, safe block w/ smart locks and thermostats keep things convenient, and you’ll love being walking distance from the train. \n\nWe can\u0027t wait to host you!\n\nThis charming two-story house offers a private, tranquil retreat. Sleeps up 6 guests, 3b/2.5b.\nThe first floor includes:\nA full kitchen\nA dining room\nA living room\nAn exercise area\nA back porch with hammock and a fire pit\nA deck perfect for tanning\n\nUpstairs, there are:\nThree bedrooms, one with a mezzanine offering stunning patio views.\nTwo full-sized bathroom, one of them with jets.\nBedroom furnishings:\nTwo bedrooms with queen-size beds\nA third bedroom with a twin bunk beds. \nThe house features a beautiful peaceful atmosphere throughout, enhancing its charm and character.",
+            "language": "en",
+            "space": "This charming two-story house offers a private, tranquil retreat. Sleeps up 6 guests, 3b/2.5b.\nThe first floor includes:\nA full kitchen\nA dining room\nA living room\nAn exercise area\nA back porch with hammock and a fire pit\nA deck perfect for tanning\n\nUpstairs, there are:\nThree bedrooms, one with a mezzanine offering stunning patio views.\nTwo full-sized bathroom, one of them with jets.\nBedroom furnishings:\nTwo bedrooms with queen-size beds\nA third bedroom with a twin bunk beds. \nThe house features a beautiful peaceful atmosphere throughout, enhancing its charm and character."
+          }
+        ],
+        "bedType": "Real Bed",
+        "formattedAddressNative": "2425 W Lyndale St, Chicago, IL 60647, USA",
+        "stateNative": "IL",
+        "instantBook": true,
+        "instantBookWelcomeMessage": ""
+      }
+    ]
+  }
+]

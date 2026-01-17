@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Simple rules for (default) database - no expiration, open access
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

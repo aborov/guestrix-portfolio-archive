@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Amenity Input Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .persian-green { color: #00a693; }
+        .text-persian-green { color: #00a693; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold text-center mb-8">Enhanced Amenity Input Test</h1>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <!-- Basic Amenities Section -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Basic Amenities</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="basic-amenities">
+                    <!-- Existing amenities -->
+                    <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                        <input type="checkbox" checked class="text-persian-green flex-shrink-0">
+                        <span class="text-sm flex-1">WiFi</span>
+                        <button onclick="removeAmenity(0)" class="flex-shrink-0 text-red-500 hover:text-red-700">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                        <input type="checkbox" checked class="text-persian-green flex-shrink-0">
+                        <span class="text-sm flex-1">Kitchen</span>
+                        <button onclick="removeAmenity(1)" class="flex-shrink-0 text-red-500 hover:text-red-700">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                    <!-- New amenity input field -->
+                    <div class="flex items-center space-x-2 p-2 bg-white rounded border border-dashed border-gray-300">
+                        <input type="checkbox" checked class="text-persian-green flex-shrink-0">
+                        <input type="text" 
+                               value="" 
+                               placeholder="Enter amenity name" 
+                               class="flex-1 px-2 py-1 border rounded text-sm"
+                               onchange="updateAmenity(this.value)"
+                               onblur="updateAmenity(this.value)"
+                               id="new-amenity-input">
+                        <button onclick="removeNewAmenity()" class="flex-shrink-0 text-red-500 hover:text-red-700">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="addAmenity()" 
+                        class="mt-2 text-sm text-persian-green hover:text-persian-green/80">
+                    <i class="fas fa-plus mr-1"></i>Add Amenity
+                </button>
+            </div>
+
+            <!-- Appliances Section -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Appliances</label>
+                <div class="space-y-2" id="appliances-list">
+                    <!-- Existing appliance -->
+                    <div class="p-3 bg-white rounded border">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                            <input type="text" value="TV" placeholder="Appliance name" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(0, 'name', this.value)">
+                            <input type="text" value="Living Room" placeholder="Location" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(0, 'location', this.value)">
+                            <input type="text" value="Samsung" placeholder="Brand" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(0, 'brand', this.value)">
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="55 inch" placeholder="Model" 
+                                       class="px-2 py-1 border rounded text-sm flex-1"
+                                       onchange="updateAppliance(0, 'model', this.value)">
+                                <button onclick="removeAppliance(0)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New appliance -->
+                    <div class="p-3 bg-white rounded border border-dashed border-gray-300">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                            <input type="text" value="" placeholder="Appliance name" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(1, 'name', this.value)">
+                            <input type="text" value="" placeholder="Location" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(1, 'location', this.value)">
+                            <input type="text" value="" placeholder="Brand" 
+                                   class="px-2 py-1 border rounded text-sm"
+                                   onchange="updateAppliance(1, 'brand', this.value)">
+                            <div class="flex items-center space-x-2">
+                                <input type="text" value="" placeholder="Model" 
+                                       class="px-2 py-1 border rounded text-sm flex-1"
+                                       onchange="updateAppliance(1, 'model', this.value)">
+                                <button onclick="removeAppliance(1)" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="addAppliance()" 
+                        class="mt-2 text-sm text-persian-green hover:text-persian-green/80">
+                    <i class="fas fa-plus mr-1"></i>Add Appliance
+                </button>
+            </div>
+
+            <!-- Test Results -->
+            <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+                <h3 class="font-semibold text-blue-800 mb-2">Test Results:</h3>
+                <div id="test-results" class="text-sm text-blue-700">
+                    Interact with the amenities and appliances to test functionality
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addAmenity() {
+            document.getElementById('test-results').innerHTML = '✅ Add Amenity clicked - would add new input field and focus on it';
+            
+            // Simulate focusing on new input
+            const newInput = document.getElementById('new-amenity-input');
+            if (newInput) {
+                newInput.focus();
+                newInput.style.borderColor = '#00a693';
+            }
+        }
+
+        function updateAmenity(value) {
+            document.getElementById('test-results').innerHTML = `✅ Amenity updated: "${value}" - would auto-save and convert to text display`;
+        }
+
+        function removeAmenity(index) {
+            document.getElementById('test-results').innerHTML = `✅ Amenity ${index} removed - would update data and auto-save`;
+        }
+
+        function removeNewAmenity() {
+            document.getElementById('test-results').innerHTML = '✅ New amenity input removed - would remove from data';
+        }
+
+        function addAppliance() {
+            document.getElementById('test-results').innerHTML = '✅ Add Appliance clicked - would add new appliance form';
+        }
+
+        function updateAppliance(index, field, value) {
+            document.getElementById('test-results').innerHTML = `✅ Appliance ${index} ${field} updated: "${value}" - would auto-save`;
+        }
+
+        function removeAppliance(index) {
+            document.getElementById('test-results').innerHTML = `✅ Appliance ${index} removed - would update data and auto-save`;
+        }
+    </script>
+</body>
+</html>

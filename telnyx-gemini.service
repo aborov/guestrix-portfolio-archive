@@ -1,0 +1,15 @@
+[Unit]
+Description=Telnyx Gemini Bidirectional Streaming
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/telnyx_websocket
+ExecStart=/home/ubuntu/telnyx_websocket/venv/bin/python run_telnyx_websocket.py
+Restart=always
+RestartSec=10
+Environment=PATH=/home/ubuntu/telnyx_websocket/venv/bin
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

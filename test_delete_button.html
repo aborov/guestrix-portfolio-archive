@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Button Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .saffron { background-color: #f4a261; }
+        .saffron:hover { background-color: #e76f51; }
+        .dark-purple { color: #2d1b69; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold text-center mb-8">Delete Button Test</h1>
+        
+        <!-- Test Property Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Test Property</h3>
+                    <p class="text-sm text-gray-600 mb-2">123 Test Street, Test City</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Setup Required
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Section -->
+            <div class="flex flex-wrap gap-2">
+                <!-- New Property Setup and Delete Buttons -->
+                <div class="flex gap-2 w-full">
+                    <button onclick="testSetup()"
+                            class="flex-1 saffron hover:bg-yellow-500 text-dark-purple px-4 py-3 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-magic mr-2"></i>Complete Setup
+                    </button>
+                    <button onclick="testDelete()"
+                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-3 rounded-lg text-sm transition-colors"
+                            title="Delete this property">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <p class="w-full text-xs text-gray-500 text-center mt-1">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Complete setup to activate this property
+                </p>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold text-blue-800 mb-2">Test Results:</h3>
+            <div id="test-results" class="text-sm text-blue-700">
+                Click the buttons to test functionality
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testSetup() {
+            document.getElementById('test-results').innerHTML = '✅ Setup button clicked - would start property setup';
+        }
+
+        function testDelete() {
+            const confirmed = confirm('Are you sure you want to delete "Test Property"?\n\nThis will permanently delete:\n• All property data\n• All knowledge items\n\nThis action cannot be undone.');
+            
+            if (confirmed) {
+                // Simulate loading state
+                const deleteButton = event.target.closest('button');
+                deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                deleteButton.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    document.getElementById('test-results').innerHTML = '✅ Delete confirmed - would delete property and knowledge items';
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteButton.disabled = false;
+                }, 2000);
+            } else {
+                document.getElementById('test-results').innerHTML = '❌ Delete cancelled by user';
+            }
+        }
+    </script>
+</body>
+</html>

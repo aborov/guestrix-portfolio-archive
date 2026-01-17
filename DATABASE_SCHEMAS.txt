@@ -1,0 +1,394 @@
+CONCIERGE APPLICATION DATABASE SCHEMAS
+==========================================
+
+This document provides comprehensive schemas for both Firestore and DynamoDB databases used in the Concierge application.
+
+OVERVIEW
+--------
+- Firestore: Primary database for users, properties, knowledge items, reservations, and magic links
+- DynamoDB: Used only for conversations and websocket connections (Conversations table)
+- Note: The ConciergeTable in DynamoDB has been deprecated and data migrated to Firestore
+
+================================================================================
+FIRESTORE COLLECTIONS AND DOCUMENT SCHEMAS
+================================================================================
+
+1. USERS COLLECTION
+-------------------
+Collection: users
+Document ID: User ID (string)
+
+Fields:
+- uid: string (User ID)
+- phoneNumber: string (Phone number)
+- displayName: string (User's display name)
+- email: string (Email address)
+- role: string (User role: 'guest', 'host', 'admin')
+- isTemporary: boolean (Whether user is temporary)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+- lastLoginAt: timestamp (Last login timestamp)
+- accessLevel: string ('full_access', 'limited_info_access')
+- accountType: string ('permanent', 'temporary')
+- createdFromMagicLink: string (Magic link token if created via magic link)
+- reservationIds: array[string] (Array of reservation IDs)
+- propertyIds: array[string] (Array of property IDs)
+- phoneNumberLast4: string (Last 4 digits of phone for temporary users)
+- magicLinkToken: string (Token hash for temporary users)
+- createdVia: string ('magic_link', 'direct_signup')
+- expiresAt: timestamp (Expiration for temporary users)
+- pinCode: string (PIN code for temporary users)
+- lastVerified: timestamp (Last verification timestamp)
+- status: string ('verified', 'pending', 'expired')
+- consents: array[object] (Data access consent records)
+- lastConsentAt: timestamp (Last consent timestamp)
+
+Consent Record Structure:
+- type: string (Consent type, e.g., 'airbnb_data_access')
+- timestamp: timestamp (When consent was given)
+- details: object (Additional consent details)
+- ipAddress: string (IP address when consent was given)
+- userAgent: string (User agent when consent was given)
+
+2. PROPERTIES COLLECTION
+------------------------
+Collection: properties
+Document ID: Property ID (string)
+
+Fields:
+- name: string (Property name)
+- address: string (Property address)
+- description: string (Property description)
+- hostId: string (ID of the host)
+- status: string ('active', 'inactive', 'pending')
+- new: boolean (Flag for new properties requiring setup)
+- icalUrl: string (iCal URL for calendar integration)
+- checkInTime: string (Check-in time, e.g., "15:00")
+- checkOutTime: string (Check-out time, e.g., "11:00")
+- wifiDetails: object
+  - network: string (WiFi network name)
+  - password: string (WiFi password)
+- amenities: object
+  - basic: array[string] (Basic amenities list)
+  - appliances: array[object] (Appliances with details)
+    - name: string (Appliance name)
+    - location: string (Location in property)
+    - brand: string (Brand name)
+    - model: string (Model number)
+- houseRules: array[object] (House rules)
+  - id: string (Rule ID)
+  - title: string (Rule title)
+  - description: string (Rule description)
+  - enabled: boolean (Whether rule is active)
+  - type: string ('rule', 'instruction', 'emergency')
+- airbnbListingUrl: string (Airbnb listing URL)
+- importData: object
+  - extractedAt: timestamp (When data was extracted)
+  - source: string ('airbnb', 'manual')
+  - rawData: object (Raw imported data)
+- setupProgress: object
+  - step1_basic: boolean (Basic info completed)
+  - step2_rules: boolean (Rules setup completed)
+  - step3_emergency: boolean (Emergency info completed)
+  - step4_facts: boolean (Property facts completed)
+  - step5_review: boolean (Review completed)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+3. KNOWLEDGE_SOURCES COLLECTION
+-------------------------------
+Collection: knowledge_sources
+Document ID: Source ID (string)
+
+Fields:
+- sourceId: string (Source identifier)
+- propertyId: string (Property this source belongs to)
+- hostId: string (Host ID)
+- type: string (Source type: 'airbnb_listing', 'manual', 'imported')
+- name: string (Source name)
+- description: string (Source description)
+- url: string (Source URL if applicable)
+- status: string ('active', 'inactive', 'processing')
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+4. KNOWLEDGE_ITEMS COLLECTION
+-----------------------------
+Collection: knowledge_items
+Document ID: Item ID (string)
+
+Fields:
+- sourceId: string (ID of the source document)
+- propertyId: string (ID of the property)
+- hostId: string (ID of the host)
+- type: string (Type of knowledge item: 'rule', 'instruction', 'amenity', 'fact')
+- tags: array[string] (Tags for categorization)
+- content: string (The actual content of the knowledge item)
+- question: string (Question text for Q&A format)
+- answer: string (Answer text for Q&A format)
+- status: string ('pending', 'approved', 'rejected')
+- embedding: array[number] (Vector embedding for similarity search)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+5. RESERVATIONS COLLECTION
+--------------------------
+Collection: reservations
+Document ID: Reservation ID (string)
+
+Fields:
+- id: string (Reservation ID)
+- propertyId: string (Property ID)
+- guestName: string (Guest name)
+- guestPhone: string (Guest phone number)
+- startDate: string (Check-in date in YYYY-MM-DD format)
+- endDate: string (Check-out date in YYYY-MM-DD format)
+- status: string ('confirmed', 'cancelled', 'completed')
+- totalPrice: number (Total reservation price)
+- currency: string (Currency code)
+- numberOfGuests: number (Number of guests)
+- specialRequests: string (Special requests from guest)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+Note: Date fields are normalized to date-only format (YYYY-MM-DD) using date_utils functions.
+
+6. MAGIC_LINKS COLLECTION
+-------------------------
+Collection: magic_links
+Document ID: Token hash (string)
+
+Fields:
+- tokenHash: string (Hashed token for security)
+- rawToken: string (Original token before hashing)
+- reservationId: string (Associated reservation ID)
+- propertyId: string (Associated property ID)
+- guestName: string (Guest name)
+- phoneLast4: string (Last 4 digits of phone)
+- expiresAt: timestamp (Expiration timestamp)
+- usedAt: timestamp (When link was used)
+- isUsed: boolean (Whether link has been used)
+- createdAt: timestamp (Creation timestamp)
+- createdBy: string (Who created the link)
+
+7. CONVERSATIONS COLLECTION (Firestore)
+---------------------------------------
+Collection: conversations
+Document ID: Conversation ID (string)
+
+Fields:
+- conversationId: string (Conversation identifier)
+- propertyId: string (Property ID)
+- userId: string (User ID)
+- guestName: string (Guest name)
+- messages: array[object] (Array of messages)
+  - role: string ('user', 'assistant')
+  - text: string (Message text)
+  - timestamp: timestamp (Message timestamp)
+  - context_used: array[object] (Context used for assistant responses)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+8. WIZARD_PROGRESS COLLECTION
+-----------------------------
+Collection: wizard_progress
+Document ID: User ID (string)
+
+Fields:
+- userId: string (User ID)
+- currentStep: string (Current wizard step)
+- stepData: object (Data for current step)
+- completedSteps: array[string] (Array of completed step IDs)
+- createdAt: timestamp (Creation timestamp)
+- updatedAt: timestamp (Last update timestamp)
+
+================================================================================
+DYNAMODB CONVERSATIONS TABLE SCHEMA
+================================================================================
+
+Table Name: Conversations
+Primary Key: PK (Partition Key), SK (Sort Key)
+Global Secondary Indexes: GSI1 (GSI1PK, GSI1SK), GSI2 (GSI2PK, GSI2SK)
+
+ENTITY TYPES AND SCHEMAS
+------------------------
+
+1. CONVERSATION ENTITY
+----------------------
+PK: "PROPERTY#{property_id}"
+SK: "CONVERSATION#{conversation_id}"
+GSI1PK: "USER#{user_id}"
+GSI1SK: timestamp (ISO format)
+
+Fields:
+- PK: string (Partition key: "PROPERTY#{property_id}")
+- SK: string (Sort key: "CONVERSATION#{conversation_id}")
+- GSI1PK: string (GSI1 partition key: "USER#{user_id}")
+- GSI1SK: string (GSI1 sort key: timestamp)
+- EntityType: string ("CONVERSATION")
+- ConversationId: string (Unique conversation ID)
+- PropertyId: string (Property ID)
+- UserId: string (User ID)
+- GuestName: string (Guest name, defaults to "Guest")
+- StartTime: string (Conversation start time)
+- CreatedAt: string (Creation timestamp)
+- LastUpdateTime: string (Last update timestamp)
+- Channel: string ('text_chat', 'voice_call')
+- MessageCount: number (Number of messages in conversation)
+- Messages: array[object] (Array of recent messages)
+  - role: string ('user', 'assistant')
+  - text: string (Message text)
+  - timestamp: string (Message timestamp)
+  - phone_number: string (Phone number for user messages)
+  - context_used: array[object] (Context used for assistant responses)
+- ReservationId: string (Optional reservation ID)
+- GuestPhone: string (Optional guest phone number)
+
+2. FEEDBACK ENTITY
+------------------
+PK: "PROPERTY#{property_id}" or "VOICE_SESSION#{session_id}"
+SK: "FEEDBACK#{timestamp}"
+GSI1PK: "USER#{user_id}" (if user_id available)
+GSI1SK: timestamp
+
+Fields:
+- PK: string (Partition key)
+- SK: string (Sort key: "FEEDBACK#{timestamp}")
+- GSI1PK: string (GSI1 partition key: "USER#{user_id}")
+- GSI1SK: string (GSI1 sort key: timestamp)
+- EntityType: string ("FEEDBACK")
+- FeedbackId: string (Unique feedback ID)
+- PropertyId: string (Property ID)
+- UserId: string (User ID)
+- SessionId: string (Optional session ID)
+- EnjoymentRating: number (0-3 rating)
+- AccuracyRating: number (1-5 rating)
+- CreatedAt: string (Creation timestamp)
+- LastUpdateTime: string (Last update timestamp)
+
+3. VOICE_CALL_DIAGNOSTICS ENTITY
+--------------------------------
+PK: "PROPERTY#{property_id}"
+SK: "VOICE_DIAGNOSTICS#{session_id}"
+GSI1PK: "USER#{user_id}"
+GSI1SK: timestamp
+
+Fields:
+- PK: string (Partition key: "PROPERTY#{property_id}")
+- SK: string (Sort key: "VOICE_DIAGNOSTICS#{session_id}")
+- GSI1PK: string (GSI1 partition key: "USER#{user_id}")
+- GSI1SK: string (GSI1 sort key: timestamp)
+- EntityType: string ("VOICE_CALL_DIAGNOSTICS")
+- SessionId: string (Voice session ID)
+- PropertyId: string (Property ID)
+- UserId: string (User ID)
+- GuestName: string (Guest name)
+- ReservationId: string (Optional reservation ID)
+- StartTime: string (Session start time)
+- EndTime: string (Session end time)
+- Duration: number (Session duration in seconds)
+- Status: string ('INITIALIZING', 'ACTIVE', 'ENDED', 'ERROR')
+- Channel: string ('voice_call')
+- ClientDiagnostics: object (Client-side diagnostics data)
+- NetworkQuality: object (Network quality metrics)
+- QualityMetrics: object
+  - ConnectionLatency: array[number] (Latency measurements)
+  - AudioDropouts: number (Number of audio dropouts)
+  - TranscriptionErrors: number (Number of transcription errors)
+  - InterruptionCount: number (Number of interruptions)
+  - ReconnectionCount: number (Number of reconnections)
+  - AverageResponseTime: array[number] (Response time measurements)
+  - AudioQualityIssues: array[string] (Audio quality issues)
+  - WebSocketEvents: array[object] (WebSocket event log)
+  - MemoryUsage: array[number] (Memory usage measurements)
+  - BufferUnderruns: number (Buffer underrun count)
+  - BufferOverruns: number (Buffer overrun count)
+- EventTimeline: array[object] (Timeline of events during call)
+
+4. VOICE_SESSION_POINTER ENTITY
+-------------------------------
+PK: "VOICE_SESSION#{session_id}"
+SK: "POINTER#{timestamp}"
+
+Fields:
+- PK: string (Partition key: "VOICE_SESSION#{session_id}")
+- SK: string (Sort key: "POINTER#{timestamp}")
+- EntityType: string ("VOICE_SESSION_POINTER")
+- SessionId: string (Voice session ID)
+- TargetPK: string (Target partition key)
+- TargetSK: string (Target sort key)
+- CreatedAt: string (Creation timestamp)
+
+5. USER_CONVERSATION ENTITY (Legacy)
+------------------------------------
+PK: "USER#{user_id}"
+SK: "CONVERSATION#{timestamp}#{conversation_id}"
+GSI1PK: "CONVERSATION#{conversation_id}"
+GSI1SK: "USER#{user_id}"
+
+Fields:
+- PK: string (Partition key: "USER#{user_id}")
+- SK: string (Sort key: "CONVERSATION#{timestamp}#{conversation_id}")
+- GSI1PK: string (GSI1 partition key: "CONVERSATION#{conversation_id}")
+- GSI1SK: string (GSI1 sort key: "USER#{user_id}")
+- EntityType: string ("USER_CONVERSATION")
+- ConversationId: string (Conversation ID)
+- PropertyId: string (Property ID)
+- Text: string (Message text)
+- Role: string ('user', 'assistant')
+- Timestamp: string (Message timestamp)
+
+================================================================================
+KEY DESIGN PATTERNS
+================================================================================
+
+FIRESTORE PATTERNS
+------------------
+1. Document IDs are typically UUIDs or meaningful identifiers
+2. Timestamps use Firestore SERVER_TIMESTAMP for consistency
+3. Arrays are used for multi-value fields (reservationIds, propertyIds)
+4. Nested objects for complex data structures (wifiDetails, amenities)
+5. Vector embeddings stored as arrays for similarity search
+
+DYNAMODB PATTERNS
+-----------------
+1. Single Table Design with EntityType field for different record types
+2. Composite keys (PK/SK) for efficient querying
+3. GSI for alternative access patterns
+4. ISO timestamp strings for sort keys
+5. Decimal conversion for float values to maintain precision
+6. Array fields for messages and metrics
+7. Optional fields based on entity type
+
+================================================================================
+MIGRATION NOTES
+================================================================================
+
+1. ConciergeTable in DynamoDB has been deprecated
+2. Main data operations migrated to Firestore:
+   - Users, Properties, Knowledge Sources, Knowledge Items, Reservations
+3. DynamoDB now only used for:
+   - Conversations (real-time chat/voice data)
+   - WebSocket connections (separate table)
+4. Both databases can coexist during transition period
+
+================================================================================
+ACCESS PATTERNS
+================================================================================
+
+COMMON QUERIES
+--------------
+Firestore:
+- Get user by ID: users/{user_id}
+- Get property by ID: properties/{property_id}
+- Get reservations by property: reservations collection with propertyId filter
+- Get knowledge items by property: knowledge_items collection with propertyId filter
+- Find similar knowledge: Vector similarity search on embedding field
+
+DynamoDB:
+- Get conversation by property: Query PK="PROPERTY#{property_id}"
+- Get conversations by user: Query GSI1PK="USER#{user_id}"
+- Get feedback by property: Query PK="PROPERTY#{property_id}" with SK begins_with "FEEDBACK#"
+- Get voice diagnostics by session: Query PK="PROPERTY#{property_id}" with SK="VOICE_DIAGNOSTICS#{session_id}"
+
+================================================================================

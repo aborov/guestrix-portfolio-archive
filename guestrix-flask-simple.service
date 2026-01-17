@@ -1,0 +1,15 @@
+[Unit]
+Description=Guestrix Simple Flask Application
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/app/flask
+Environment=PATH=/app/flask/venv/bin
+ExecStart=/app/flask/venv/bin/gunicorn --workers=1 --threads=2 --bind=127.0.0.1:8082 --timeout=120 simple_flask_app:app
+Restart=always
+StandardOutput=append:/var/log/guestrix-flask.log
+StandardError=append:/var/log/guestrix-flask.error.log
+
+[Install]
+WantedBy=multi-user.target
