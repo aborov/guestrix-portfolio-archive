@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Select Your Reservation{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-persian-green to-teal-600 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+            <div class="mx-auto w-16 h-16 bg-persian-green rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-calendar-check text-white text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-dark-purple mb-2">Multiple Reservations Found</h1>
+            <p class="text-gray-600">
+                We found multiple reservations for <strong>{{ property_name }}</strong> with your phone number. 
+                Please select your reservation:
+            </p>
+        </div>
+
+        <form method="POST" action="{{ url_for('magic.select_reservation', token=token) }}">
+            <div class="space-y-3 mb-6">
+                {% for reservation in reservations %}
+                <label class="block">
+                    <input type="radio" name="selected_reservation" value="{{ reservation.id }}" 
+                           class="sr-only peer" required>
+                    <div class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition-all
+                                peer-checked:border-persian-green peer-checked:bg-persian-green/5
+                                hover:border-persian-green/50">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold text-dark-purple">
+                                    {{ reservation.guest_name or reservation.guestName or 'Guest' }}
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    {% if reservation.checkin_date and reservation.checkout_date %}
+                                        {{ reservation.checkin_date }} - {{ reservation.checkout_date }}
+                                    {% elif reservation.checkinDate and reservation.checkoutDate %}
+                                        {{ reservation.checkinDate }} - {{ reservation.checkoutDate }}
+                                    {% else %}
+                                        Reservation ID: {{ reservation.id[:8] }}...
+                                    {% endif %}
+                                </div>
+                                {% if reservation.platform %}
+                                <div class="text-xs text-gray-500 mt-1">
+                                    via {{ reservation.platform }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center
+                                        peer-checked:border-persian-green peer-checked:bg-persian-green">
+                                <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+
+            <button type="submit" 
+                    class="w-full bg-persian-green hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
+                <i class="fas fa-arrow-right mr-2"></i>
+                Continue with Selected Reservation
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-500">
+                Don't see your reservation? 
+                <a href="mailto:support@guestrix.ai" class="text-persian-green hover:underline">
+                    Contact support
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom radio button styling */
+input[type="radio"]:checked + div {
+    border-color: #00A693 !important;
+    background-color: rgba(0, 166, 147, 0.05) !important;
+}
+
+input[type="radio"]:checked + div .w-5 {
+    border-color: #00A693 !important;
+    background-color: #00A693 !important;
+}
+
+input[type="radio"]:checked + div .w-2 {
+    opacity: 1 !important;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,11 @@
+{
+  "InfraStack": {
+    "EC2InstancePublicDNS": "ec2-3-14-145-18.us-east-2.compute.amazonaws.com",
+    "WebSocketApiUrl": "wss://rlrnx1tks4.execute-api.us-east-2.amazonaws.com",
+    "ConsolidatedCallHandlerArn": "arn:aws:lambda:us-east-2:817634563684:function:InfraStack-ConsolidatedCallHandlerF17A7AFD-ajD8dZKC8TFR",
+    "EC2InstancePublicIP": "3.14.145.18",
+    "CustomDomainURL": "https://app.guestrix.ai",
+    "TelnyxPhoneCallApiUrl": "https://pl1epolsn3.execute-api.us-east-2.amazonaws.com/",
+    "WebSocketApiFullUrl": "wss://rlrnx1tks4.execute-api.us-east-2.amazonaws.com/dev",
+  }
+}

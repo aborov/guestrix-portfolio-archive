@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}Guestrix - Login{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Form input styles */
+    .form-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+        color: var(--dark-purple);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-primary-custom:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-link-custom {
+        background: none;
+        border: none;
+        color: var(--persian-green);
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px;
+    }
+
+    .btn-link-custom:hover {
+        color: #238a7a;
+        text-decoration: underline;
+    }
+
+    /* Error message styles */
+    .error-message {
+        background-color: var(--bittersweet);
+        color: white;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    /* Success message styles */
+    .success-message {
+        background-color: var(--persian-green);
+        color: white;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    /* Success icon animation */
+    .success-icon {
+        color: var(--persian-green);
+        animation: checkmark 0.6s ease-in-out;
+    }
+
+    @keyframes checkmark {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Auth step visibility */
+    .auth-step {
+        display: none;
+    }
+    .auth-step.active {
+        display: block;
+    }
+
+    /* reCAPTCHA container */
+    #recaptcha-container {
+        margin: 20px 0;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Welcome back! Please sign in to continue.</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Login to Guestrix</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <!-- Error message container -->
+                <div id="error-message" class="error-message" style="display: none;"></div>
+
+                <!-- Phone number step -->
+                <div id="phone-step" class="auth-step active">
+                    <div class="mb-6">
+                        <label for="phone-number" class="block text-dark-purple font-semibold mb-2">Phone Number</label>
+                        <input type="tel" class="form-input w-full" id="phone-number" placeholder="(555) 123-4567" required>
+                        <div class="form-text-custom">Select your country and enter your phone number</div>
+                    </div>
+                    <div class="mb-6">
+                        <div id="recaptcha-container"></div>
+                    </div>
+                    
+                    <!-- Legal Consent Section -->
+                    <div class="mb-6 p-4 bg-light-cyan/30 rounded-lg border border-persian-green/20">
+                        <label class="flex items-start gap-3 text-sm">
+                            <input type="checkbox" name="agree_legal_policies" class="mt-1 rounded border-persian-green/30 text-persian-green focus:ring-persian-green" required>
+                            <span class="text-dark-purple/80">
+                                I agree to Guestrix's 
+                                <a href="https://guestrix.ai/terms.html" target="_blank" class="text-persian-green hover:underline">Terms of Use</a>, 
+                                <a href="https://guestrix.ai/privacy.html" target="_blank" class="text-persian-green hover:underline">Privacy Policy</a>, 
+                                and <a href="https://guestrix.ai/cookie.html" target="_blank" class="text-persian-green hover:underline">Cookie Policy</a>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <button id="send-code-button" class="btn-primary-custom w-full" disabled>Send Verification Code</button>
+                </div>
+
+                <!-- Verification code step -->
+                <div id="code-step" class="auth-step">
+                    <div class="mb-6">
+                        <label for="verification-code" class="block text-dark-purple font-semibold mb-2">Verification Code</label>
+                        <input type="text" class="form-input w-full" id="verification-code" placeholder="123456"
+                               inputmode="numeric" pattern="[0-9]*" maxlength="6" required>
+                        <div class="form-text-custom">Enter the 6-digit code sent to your phone</div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button id="back-to-phone" class="btn-link-custom flex-1">Back</button>
+                        <button id="verify-code-button" class="btn-primary-custom flex-1">Verify Code</button>
+                    </div>
+                </div>
+
+                <!-- Success step -->
+                <div id="success-step" class="auth-step">
+                    <div class="text-center">
+                        <div class="mb-6">
+                            <i class="bi bi-check-circle-fill success-icon" style="font-size: 4rem;"></i>
+                        </div>
+                        <div class="success-message">
+                            <i class="bi bi-check-circle-fill"></i> Successfully authenticated!
+                        </div>
+                        <p class="text-dark-purple">Redirecting to your dashboard...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Enhanced Phone Input -->
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+
+<script>
+    // Flag to prevent multiple initializations
+    window.phoneAuthInitialized = false;
+    
+    // Track checkbox and reCAPTCHA states
+    let legalConsentChecked = false;
+    let recaptchaSolved = false;
+    
+    function updateSendButtonState() {
+        const sendButton = document.getElementById('send-code-button');
+        if (sendButton) {
+            sendButton.disabled = !(legalConsentChecked && recaptchaSolved);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded on login page');
+
+        // Initialize enhanced phone input
+        initializePhoneInput('phone-number', {
+            defaultCountry: 'US',
+            placeholder: '(555) 123-4567',
+            autoFormat: true
+        });
+
+        // Set up legal consent checkbox listener
+        const legalConsentCheckbox = document.querySelector('input[name="agree_legal_policies"]');
+        if (legalConsentCheckbox) {
+            legalConsentCheckbox.addEventListener('change', function() {
+                legalConsentChecked = this.checked;
+                console.log('Legal consent checked:', legalConsentChecked);
+                updateSendButtonState();
+            });
+        }
+        
+        // Override the global reCAPTCHA callback to also update our state
+        window.recaptchaCallback = function(response) {
+            console.log('reCAPTCHA verified successfully');
+            recaptchaSolved = true;
+            updateSendButtonState();
+        };
+        
+        window.recaptchaExpiredCallback = function() {
+            console.log('reCAPTCHA expired');
+            recaptchaSolved = false;
+            updateSendButtonState();
+        };
+        
+        // Prevent any auto-redirects on the login page
+        if (window.location.pathname === '/login') {
+            console.log('On login page, disabling auto-redirects');
+            // This is handled in the updated checkAuthState function
+        }
+        
+        // Add debug information
+        console.log('Firebase SDK loaded:', typeof firebase !== 'undefined');
+        if (typeof firebase !== 'undefined') {
+            console.log('Firebase Auth loaded:', typeof firebase.auth !== 'undefined');
+            console.log('Firebase config:', typeof firebaseConfig !== 'undefined' ? 'Available' : 'Not available');
+        } else {
+            console.error('Firebase SDK not loaded properly');
+        }
+        
+        // Wait a bit to ensure Firebase is fully loaded, but only initialize once
+        if (!window.phoneAuthInitialized) {
+            setTimeout(function() {
+                try {
+                    // This will be initialized in auth.js
+                    console.log('Initializing Phone Auth...');
+                    initializePhoneAuth();
+                    window.phoneAuthInitialized = true;
+                    console.log('Phone Auth initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing Phone Auth:', error);
+                }
+            }, 1000);
+        } else {
+            console.log('Phone Auth already initialized, skipping');
+        }
+    });
+</script>
+{% endblock %}

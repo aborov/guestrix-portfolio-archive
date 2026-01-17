@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">My Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div id="updateSuccess" class="alert alert-success" style="display: none;">
+                        Profile updated successfully!
+                    </div>
+
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+
+                    {% if success %}
+                        <div class="alert alert-success">{{ success }}</div>
+                    {% endif %}
+
+                    {% if user_data %}
+                        <form method="POST" action="{{ url_for('views.profile') }}" id="profile-form">
+                            <div class="mb-3">
+                                <label for="displayName" class="form-label">Display Name</label>
+                                <input type="text" class="form-control" id="displayName" name="displayName"
+                                       value="{{ user_data.get('displayName', user_data.get('DisplayName', '')) }}">
+                                <div class="form-text">This name will be shown to your guests.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{{ user_data.get('email', user_data.get('Email', '')) }}">
+                                <div class="form-text">Your email address is used for account notifications.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber"
+                                       value="{{ user_data.get('phoneNumber', user_data.get('PhoneNumber', '')) }}"
+                                       placeholder="(555) 123-4567">
+                                <div class="form-text">Select your country and enter your phone number</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <input type="text" class="form-control" id="role" name="role"
+                                       value="{{ user_data.get('role', 'guest') }}" readonly disabled>
+                                <div class="form-text">Your account type cannot be changed.</div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('views.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            Could not load user profile data. Please try again.
+                        </div>
+                        <a href="{{ url_for('views.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<!-- Enhanced Phone Input -->
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+
+<script>
+    // Check for URL parameters to show success message
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize enhanced phone input
+        const phoneInput = document.getElementById('phoneNumber');
+        let currentPhone = phoneInput ? phoneInput.value : '';
+        let countryCode = 'US';
+        let localNumber = '';
+
+        // Parse the phone number using the comprehensive parser
+        if (currentPhone && typeof parsePhoneNumber === 'function') {
+            const parsed = parsePhoneNumber(currentPhone);
+            countryCode = parsed.countryCode;
+            localNumber = parsed.localNumber;
+
+            // Clear the input value so enhanced input can set it properly
+            phoneInput.value = localNumber;
+        }
+
+        initializePhoneInput('phoneNumber', {
+            defaultCountry: countryCode,
+            placeholder: '(555) 123-4567',
+            autoFormat: true
+        });
+
+        // Handle form submission to ensure complete phone number is sent
+        const form = document.getElementById('profile-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const completePhoneNumber = getCompletePhoneNumber('phoneNumber');
+                const phoneInput = document.getElementById('phoneNumber');
+
+                if (completePhoneNumber) {
+                    // Create a hidden input with the complete phone number
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'phoneNumber';
+                    hiddenInput.value = completePhoneNumber;
+
+                    // Remove the name attribute from the visible input to avoid conflicts
+                    phoneInput.removeAttribute('name');
+
+                    // Add the hidden input to the form
+                    form.appendChild(hiddenInput);
+                }
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('updated') === 'true') {
+            const successAlert = document.getElementById('updateSuccess');
+            if (successAlert) {
+                successAlert.style.display = 'block';
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+        }
+    });
+</script>
+{% endblock %}

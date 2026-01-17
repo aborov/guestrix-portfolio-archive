@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Guest Account - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background-color: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-link-custom {
+        background: none;
+        border: none;
+        color: var(--persian-green);
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 8px;
+    }
+
+    .btn-link-custom:hover {
+        color: #238a7a;
+        text-decoration: underline;
+    }
+
+    /* Phone display */
+    .phone-display {
+        background: rgba(42, 157, 143, 0.1);
+        border: 1px solid rgba(42, 157, 143, 0.2);
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+        margin-bottom: 24px;
+        color: var(--dark-purple);
+        font-weight: 600;
+    }
+
+    /* Info card */
+    .info-card {
+        background: rgba(233, 196, 106, 0.1);
+        border: 2px solid rgba(233, 196, 106, 0.3);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .info-card .title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--dark-purple);
+        margin-bottom: 12px;
+    }
+
+    .info-card .message {
+        color: var(--dark-purple);
+        opacity: 0.8;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    /* Steps list */
+    .steps-list {
+        background: rgba(42, 157, 143, 0.05);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .steps-list .step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        color: var(--dark-purple);
+        font-size: 14px;
+    }
+
+    .steps-list .step:last-child {
+        margin-bottom: 0;
+    }
+
+    .steps-list .step-number {
+        background: var(--persian-green);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Form input styles */
+    .form-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+        color: var(--dark-purple);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Guest Account Setup</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Use Your Host's Magic Link</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <div class="phone-display">
+                    {{ phone_number | default('****-****') }}
+                </div>
+                
+                <div class="info-card">
+                    <div class="title">Almost there! Let's get you connected properly</div>
+                    <div class="message">
+                        As a guest, you should have received a special magic link from your host. 
+                        This link provides instant access to your reservation and property information.
+                    </div>
+                    
+                    <div class="steps-list">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div>Check your email or text messages from your host</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div>Look for a message with a link to access your reservation</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div>Copy and paste the link below, or click it to get instant access</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Magic Link Input Form -->
+                <form method="POST" action="{{ url_for('auth.process_magic_link') }}" class="mb-4">
+                    <div class="mb-3">
+                        <label for="magic_link_url" class="block text-dark-purple font-semibold mb-2">
+                            🔗 Paste Your Magic Link Here
+                        </label>
+                        <input
+                            type="url"
+                            id="magic_link_url"
+                            name="magic_link_url"
+                            class="form-input w-full"
+                            placeholder="https://app.guestrix.ai/magic/abc123..."
+                            required
+                        >
+                        <div class="form-text-custom">
+                            Paste the complete magic link URL you received from your host
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary-custom w-full mb-3">
+                        🚀 Access with Magic Link
+                    </button>
+                </form>
+                
+                <div class="text-center mb-4" style="padding: 20px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;">
+                    <p class="text-dark-purple/60 text-sm mb-3">
+                        Or contact your host directly:
+                    </p>
+                    <a href="mailto:?subject=Requesting%20Property%20Access%20Link" class="btn-secondary-custom w-full mb-4">
+                        📧 Email Your Host for the Link
+                    </a>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <p class="text-dark-purple/60 text-sm mb-3">
+                        Don't have a host or want to create a standalone guest account anyway?
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('auth.create_standalone_guest') }}" style="display: inline;">
+                        <button type="submit" class="btn-link-custom">
+                            Create standalone guest account
+                        </button>
+                    </form>
+                </div>
+                
+                <a href="{{ url_for('auth.phone_login') }}" class="btn-secondary-custom w-full">
+                    ← Use Different Phone Number
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-focus the contact host button for better UX
+document.addEventListener('DOMContentLoaded', function() {
+    const contactBtn = document.querySelector('.btn-primary-custom');
+    if (contactBtn) {
+        contactBtn.focus();
+    }
+});
+</script>
+{% endblock %} 

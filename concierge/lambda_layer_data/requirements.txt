@@ -1,0 +1,1 @@
+# lancedb  # Removed - migrated to Firestore for vector search

@@ -1,0 +1,12 @@
+{
+  "hosted-zone:account=817634563684:domainName=guestrix.ai:region=us-east-2": {
+    "Id": "/hostedzone/Z08243681PBY548TCDDVP",
+    "Name": "guestrix.ai."
+  },
+  "availability-zones:account=817634563684:region=us-east-2": [
+    "us-east-2a",
+    "us-east-2b",
+    "us-east-2c"
+  ],
+  "ami:account=817634563684:filters.image-type.0=machine:filters.name.0=ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*:filters.state.0=available:owners.0=099720109477:region=us-east-2": "ami-005cd4ee51d7b4339"
+}

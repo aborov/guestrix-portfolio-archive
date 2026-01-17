@@ -1,0 +1,12 @@
+{
+  "enableAutoSubDomain": true,
+  "subDomainSettings": [
+    {
+      "branchName": "dev",
+      "prefix": "dev"
+    }
+  ],
+  "autoSubDomainCreationPatterns": ["*"],
+  "autoSubDomainIAMRole": "arn:aws:iam::817634563684:role/amplify-guestrix-dev-94c24-authRole",
+  "enableAutoSubDomainIAMRole": true
+}

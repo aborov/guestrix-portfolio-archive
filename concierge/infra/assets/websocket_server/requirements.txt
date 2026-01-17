@@ -1,0 +1,7 @@
+websockets
+google-cloud-speech
+google-cloud-texttospeech
+google-generativeai
+python-dotenv
+asyncio
+opuslib

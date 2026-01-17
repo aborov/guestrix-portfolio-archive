@@ -1,0 +1,8 @@
+# Requirements for Lambda functions
+google-cloud-firestore
+google-generativeai
+flask-socketio[client]
+websockets
+firebase-admin
+twilio
+livekit

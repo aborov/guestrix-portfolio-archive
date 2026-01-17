@@ -1,0 +1,62 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-guestrix-dev-5b842-authRole",
+      "UnauthRoleArn": "arn:aws:iam::817634563684:role/amplify-guestrix-dev-5b842-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::817634563684:role/amplify-guestrix-dev-5b842-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-guestrix-dev-5b842-deployment",
+      "UnauthRoleName": "amplify-guestrix-dev-5b842-unauthRole",
+      "StackName": "amplify-guestrix-dev-5b842",
+      "StackId": "arn:aws:cloudformation:us-east-2:817634563684:stack/amplify-guestrix-dev-5b842/474a4cf0-20b0-11f0-a123-064ffc8b9b43",
+      "AmplifyAppId": "d1u169ifu6z79x"
+    }
+  },
+  "function": {
+    "waitlistapi": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "lastBuildTimeStamp": "2025-04-25T00:12:31.744Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2025-04-25T00:12:31.886Z",
+      "distZipFilename": "waitlistapi-385839746c4a46614e58-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-guestrix-dev-5b842-deployment",
+        "s3Key": "amplify-builds/waitlistapi-385839746c4a46614e58-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-guestrix-dev-5b842-deployment/amplify-cfn-templates/function/waitlistapi-cloudformation-template.json",
+        "logicalId": "functionwaitlistapi"
+      },
+      "lastPushTimeStamp": "2025-04-25T00:14:06.770Z",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::817634563684:role/guestrixLambdaRole41270a9e-dev",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:lambda:us-east-2:817634563684:function:waitlistapi-dev",
+        "Name": "waitlistapi-dev",
+        "LambdaExecutionRole": "guestrixLambdaRole41270a9e-dev"
+      },
+      "lastPushDirHash": "JnVHcYJMy6gptSAwxud93WDdzaM="
+    }
+  },
+  "storage": {
+    "WaitList": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB",
+      "output": {
+        "PartitionKeyName": "id",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:dynamodb:us-east-2:817634563684:table/WaitList-dev",
+        "StreamArn": "arn:aws:dynamodb:us-east-2:817634563684:table/WaitList-dev/stream/2025-04-24T02:55:14.369",
+        "PartitionKeyType": "S",
+        "Name": "WaitList-dev"
+      },
+      "lastPushTimeStamp": "2025-04-25T00:14:06.452Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-guestrix-dev-5b842-deployment/amplify-cfn-templates/storage/WaitList-cloudformation-template.json",
+        "logicalId": "storageWaitList"
+      }
+    }
+  }
+}

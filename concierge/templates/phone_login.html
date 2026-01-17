@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block title %}Phone Login - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Form input styles */
+    .form-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+        color: var(--dark-purple);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-secondary-custom {
+        background-color: #f3f4f6;
+        color: var(--dark-purple);
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #e5e7eb;
+        color: var(--dark-purple);
+        text-decoration: none;
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">
+                {% if is_magic_link %}
+                    Login with your phone number
+                {% else %}
+                    Welcome back! Enter your phone number to continue.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 id="card-title" class="text-xl font-bold mb-0">Login with Phone</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                {% if message %}
+                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-blue-700 text-sm">{{ message }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Error/Warning messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {# Filter out host-specific messages - they're not relevant for guests #}
+                            {% set is_host_message = (
+                                'knowledge items generated successfully' in message or
+                                'knowledge items created' in message or
+                                'File uploaded' in message or
+                                'Text added' in message or
+                                'duplicates skipped' in message or
+                                'failed to create knowledge items' in message
+                            ) %}
+                            {% if not is_host_message %}
+                                <div class="mb-4 p-3 {{ 'bg-red-50 border-red-200' if category == 'error' else 'bg-yellow-50 border-yellow-200' }} border rounded-lg">
+                                    <p class="{{ 'text-red-700' if category == 'error' else 'text-yellow-700' }} text-sm">{{ message }}</p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ form_action or url_for('auth.phone_login') }}" id="auth-form">
+                    {% if token %}
+                        <input type="hidden" name="token" value="{{ token }}">
+                    {% endif %}
+                    <input type="hidden" name="auth_method" id="auth-method" value="phone">
+
+                    <!-- Phone number step -->
+                    <div id="phone-step" class="auth-step">
+                        <p class="mb-6 text-dark-purple">
+                            {% if is_magic_link %}
+                                Enter your phone number to access your existing account. We'll send a verification code to confirm it's you.
+                            {% else %}
+                                Enter your phone number to receive a verification code and continue.
+                            {% endif %}
+                        </p>
+
+                        <div class="mb-6">
+                            <label for="phone_number" class="block text-dark-purple font-semibold mb-2">Phone Number</label>
+                            <input
+                                type="tel"
+                                id="phone_number"
+                                name="phone_number"
+                                class="form-input w-full"
+                                placeholder="(555) 123-4567"
+                                value="{{ phone_number or '' }}"
+                                required
+                            >
+                            <div class="form-text-custom">
+                                Select your country and enter your phone number
+                            </div>
+                        </div>
+
+                        <!-- Toggle to email -->
+                        <div class="text-center mb-4">
+                            <button type="button" id="switch-to-email" class="text-persian-green hover:text-green-600 text-sm font-medium underline">
+                                Login with email instead
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Email step -->
+                    <div id="email-step" class="auth-step" style="display: none;">
+                        <p class="mb-6 text-dark-purple">
+                            Enter your email address to receive a sign-in link. Check your inbox and click the link to continue.
+                        </p>
+
+                        <div class="mb-6">
+                            <label for="email" class="block text-dark-purple font-semibold mb-2">Email Address</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input w-full" 
+                                placeholder="your@email.com" 
+                                data-required="true"
+                            >
+                            <div class="form-text-custom">Enter your email address to receive a sign-in link</div>
+                        </div>
+
+                        <!-- Toggle to phone -->
+                        <div class="text-center mb-4">
+                            <button type="button" id="switch-to-phone" class="text-persian-green hover:text-green-600 text-sm font-medium underline">
+                                Login with phone number instead
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Legal Consent Section -->
+                    <div class="mb-6 p-4 bg-light-cyan/30 rounded-lg border border-persian-green/20">
+                        <label class="flex items-start gap-3 text-sm">
+                            <input type="checkbox" name="agree_legal_policies" class="mt-1 rounded border-persian-green/30 text-persian-green focus:ring-persian-green" required>
+                            <span class="text-dark-purple/80">
+                                I agree to Guestrix's 
+                                <a href="https://guestrix.ai/terms.html" target="_blank" class="text-persian-green hover:underline">Terms of Use</a>, 
+                                <a href="https://guestrix.ai/privacy.html" target="_blank" class="text-persian-green hover:underline">Privacy Policy</a>, 
+                                and <a href="https://guestrix.ai/cookie.html" target="_blank" class="text-persian-green hover:underline">Cookie Policy</a>
+                            </span>
+                        </label>
+                    </div>
+
+                <!-- Shared Action Buttons -->
+                <div id="auth-form-section">
+                    <div class="space-y-3">
+                        <button type="submit" id="phone-submit-button" class="btn-primary-custom w-full">Continue with Phone Number</button>
+                        <button type="submit" id="email-submit-button" class="btn-primary-custom w-full" style="display: none;" disabled>Send Sign-In Link</button>
+                        {% if back_url %}
+                            <a href="{{ back_url }}" class="btn-secondary-custom w-full">
+                                ← {{ back_text or 'Back' }}
+                            </a>
+                        {% elif is_magic_link %}
+                            <a href="{{ url_for('magic.magic_link_access', token=token) }}" class="btn-secondary-custom w-full">
+                                ← Back to PIN Screen
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn-secondary-custom w-full">
+                                ← Back to Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <div class="form-text-custom">Having trouble? Contact your host for assistance.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Enhanced Phone Input -->
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+
+<script>
+// Focus the phone input on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize enhanced phone input
+    initializePhoneInput('phone_number', {
+        defaultCountry: 'US',
+        placeholder: '(555) 123-4567',
+        autoFormat: true
+    });
+
+    // Focus the phone input after initialization
+    setTimeout(() => {
+        const container = document.querySelector('.phone-input-container');
+        if (container && container.phoneInput) {
+            container.phoneInput.focus();
+        }
+    }, 100);
+
+    // Handle form submission to ensure complete phone number is sent
+    const form = document.getElementById('auth-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const completePhoneNumber = getCompletePhoneNumber('phone_number');
+            const phoneInput = document.getElementById('phone_number');
+
+            if (completePhoneNumber) {
+                // Create a hidden input with the complete phone number
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'phone_number';
+                hiddenInput.value = completePhoneNumber;
+
+                // Remove the name attribute from the visible input to avoid conflicts
+                phoneInput.removeAttribute('name');
+
+                // Add the hidden input to the form
+                form.appendChild(hiddenInput);
+            }
+        });
+    }
+
+    // Auth method toggle functionality
+    let currentAuthMethod = 'phone';
+    const emailInput = document.getElementById('email');
+    const legalConsentCheckbox = document.querySelector('input[name="agree_legal_policies"]');
+    let legalConsentChecked = false;
+
+    function switchToEmail() {
+        currentAuthMethod = 'email';
+        document.getElementById('phone-step').style.display = 'none';
+        document.getElementById('email-step').style.display = 'block';
+        document.getElementById('phone-submit-button').style.display = 'none';
+        document.getElementById('email-submit-button').style.display = 'block';
+        document.getElementById('card-title').textContent = 'Login with Email';
+        
+        // Remove required attribute from phone input to prevent validation errors
+        const phoneInput = document.getElementById('phone_number');
+        if (phoneInput) {
+            phoneInput.removeAttribute('required');
+        }
+        
+        // Focus email input
+        setTimeout(() => {
+            if (emailInput) {
+                emailInput.focus();
+            }
+        }, 100);
+        updateEmailButtonState();
+    }
+
+    function switchToPhone() {
+        currentAuthMethod = 'phone';
+        document.getElementById('phone-step').style.display = 'block';
+        document.getElementById('email-step').style.display = 'none';
+        document.getElementById('phone-submit-button').style.display = 'block';
+        document.getElementById('email-submit-button').style.display = 'none';
+        document.getElementById('card-title').textContent = 'Login with Phone';
+        
+        // Add required attribute back to phone input
+        const phoneInput = document.getElementById('phone_number');
+        if (phoneInput) {
+            phoneInput.setAttribute('required', 'true');
+        }
+        
+        // Focus phone input
+        setTimeout(() => {
+            const container = document.querySelector('.phone-input-container');
+            if (container && container.phoneInput) {
+                container.phoneInput.focus();
+            }
+        }, 100);
+    }
+
+    function updateEmailButtonState() {
+        const emailButton = document.getElementById('email-submit-button');
+        if (!emailInput || !emailButton) return;
+        
+        const email = emailInput.value.trim();
+        
+        if (email && legalConsentChecked) {
+            emailButton.disabled = false;
+        } else {
+            emailButton.disabled = true;
+        }
+    }
+
+    // Toggle button event listeners
+    document.getElementById('switch-to-email').addEventListener('click', switchToEmail);
+    document.getElementById('switch-to-phone').addEventListener('click', switchToPhone);
+
+    // Email input listener
+    if (emailInput) {
+        emailInput.addEventListener('input', updateEmailButtonState);
+    }
+
+    // Form submission handler
+    document.getElementById('auth-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Update auth method hidden field
+        document.getElementById('auth-method').value = currentAuthMethod;
+        
+        // Validate form based on current auth method
+        if (currentAuthMethod === 'phone') {
+            const phoneNumber = document.getElementById('phone_number').value.trim();
+            if (!phoneNumber) {
+                showError('Please enter your phone number');
+                return;
+            }
+            
+            // Submit phone form
+            this.submit();
+            
+        } else {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+            
+            // Send email link using auth.js function
+            sendEmailLinkAuth(email);
+        }
+    });
+    
+    function showError(message) {
+        // Show error message to user
+        alert(message); // Replace with your preferred error display method
+    }
+    
+    async function sendEmailLinkAuth(email) {
+        // Show loading state
+        const submitButton = document.getElementById('email-submit-button');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+        
+        try {
+            // Call the sendEmailLink function from auth.js
+            const result = await sendEmailLink(email);
+            
+            if (result.success) {
+                // Show success message
+                document.getElementById('email-step').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-green-600 mb-4">
+                            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-dark-purple mb-2">Check your email</h3>
+                        <p class="text-dark-purple/80 mb-6">We've sent a sign-in link to <span class="font-semibold">${email}</span></p>
+                        <p class="text-sm text-dark-purple/60">Didn't receive an email? <button id="resend-email" class="text-persian-green hover:underline">Resend</button></p>
+                    </div>
+                `;
+                
+                // Add event listener for resend button
+                document.getElementById('resend-email').addEventListener('click', function() {
+                    sendEmailLinkAuth(email);
+                });
+            } else {
+                throw new Error(result.error || 'Failed to send email');
+            }
+        } catch (error) {
+            console.error('Email sending error:', error);
+            showError(error.message || 'Failed to send email. Please try again.');
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        }
+    }
+
+    // Legal consent checkbox listener
+    if (legalConsentCheckbox) {
+        legalConsentCheckbox.addEventListener('change', function() {
+            legalConsentChecked = this.checked;
+            updateEmailButtonState();
+        });
+    }
+
+    // Email send button listener
+    const emailButton = document.getElementById('email-submit-button');
+    if (emailButton) {
+        emailButton.addEventListener('click', async function() {
+            const email = emailInput.value.trim();
+            if (!email) return;
+
+            try {
+                emailButton.disabled = true;
+                emailButton.textContent = 'Sending...';
+
+                // Initialize Firebase auth if needed
+                if (typeof initializeAuth === 'function') {
+                    await initializeAuth();
+                }
+
+                const result = await sendEmailLink(email);
+
+                if (result.success) {
+                    // Show success message
+                    document.getElementById('email-step').innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="rounded-full h-16 w-16 bg-persian-green/10 mx-auto flex items-center justify-center mb-4">
+                                <svg class="h-8 w-8 text-persian-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-dark-purple mb-2">Check your email</h3>
+                            <p class="text-dark-purple/70 mb-4">We've sent a sign-in link to <strong>${email}</strong></p>
+                            <p class="text-sm text-dark-purple/60 mb-6">The link will expire in 10 minutes.</p>
+                            <button type="button" id="switch-to-phone-from-sent" class="text-persian-green hover:text-green-600 text-sm font-medium underline">
+                                Use phone number instead
+                            </button>
+                        </div>
+                    `;
+
+                    // Add event listener for the new switch button
+                    document.getElementById('switch-to-phone-from-sent').addEventListener('click', switchToPhone);
+                    
+                    // Hide the form section
+                    document.getElementById('auth-form-section').style.display = 'none';
+
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Email sending error:', error);
+                alert('Failed to send email link. Please try again.');
+                emailButton.disabled = false;
+                emailButton.textContent = 'Send Email Link';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+{% block title %}Reservations for {{ property.property_name or property.name or 'Property' }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Reservations for {{ property.property_name or property.name or 'Property' }}</h2>
+    {% set current_property_id = property.id %}
+    <input type="hidden" id="current-property-id" value="{{ property.id }}">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{{ url_for('views.properties_list') }}" class="btn btn-secondary">&larr; Back to Properties</a>
+        
+        {% if property.icalUrl %}
+        <button id="refresh-reservations-btn" class="btn btn-primary" onclick="refreshReservations()">
+            <i class="fas fa-sync-alt"></i> Refresh from iCal
+        </button>
+        {% else %}
+        <span class="text-muted small">No iCal URL configured - cannot refresh automatically</span>
+        {% endif %}
+    </div>
+    {% if reservations %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="w-15">Start Date</th>
+                    <th class="w-15">End Date</th>
+                    <th class="w-30">Guest Contact Info</th>
+                    <th>Summary</th>
+                    <th>Guest Access</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td>
+                    {% if res.startDate %}
+                        {{ res.startDate }}
+                    {% else %}
+                        -
+                    {% endif %}
+                    </td>
+                    <td>
+                    {% if res.endDate %}
+                        {{ res.endDate }}
+                    {% else %}
+                        -
+                    {% endif %}
+                    </td>
+                    <td>
+                        <!-- Primary contact section (from Airbnb) -->
+                        {% if res.guestPhoneNumber or res.GuestPhoneNumber or res.guestPhoneLast4 or res.GuestPhoneLast4 %}
+                        <div class="mb-2">
+                            <strong>Primary contact:</strong>
+                            {% if res.guestPhoneNumber or res.GuestPhoneNumber %}
+                                <span class="d-block">
+                                    {{ res.guestPhoneNumber or res.GuestPhoneNumber }} 
+                                    ({{ res.guestName or res.GuestName or 'Guest' }})
+                                </span>
+                            {% elif res.guestPhoneLast4 or res.GuestPhoneLast4 %}
+                                <small class="text-muted d-block">
+                                    From Airbnb: ***-***-{{ res.guestPhoneLast4 or res.GuestPhoneLast4 }}
+                                </small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Additional contacts section -->
+                        <div class="mb-2" id="contacts-container-{{ res.id }}">
+                            {% if res.additional_contacts or res.AdditionalContacts %}
+                                {% set contacts = res.additional_contacts or res.AdditionalContacts or [] %}
+                                {% for contact in contacts %}
+                                <div class="input-group input-group-sm mb-1 contact-entry">
+                                    <input type="text" class="form-control contact-name" placeholder="Name" value="{{ contact.name }}">
+                                    <input type="tel" class="form-control contact-phone" placeholder="+1xxxxxxxxxx" value="{{ contact.phone }}">
+                                    <button class="btn btn-outline-danger btn-sm remove-contact" type="button">&times;</button>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Controls for adding contacts -->
+                        <div class="d-flex">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="addContactField('{{ res.id }}')">
+                                <i class="fas fa-plus"></i> Add Contact
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="saveContacts('{{ current_property_id }}', '{{ res.id }}')">
+                                Save Contacts
+                            </button>
+                        </div>
+                    </td>
+                    <td>{{ res.summary or res.Summary or '' }}</td>
+                    <td>
+                        <!-- Magic Link Management -->
+                        <div class="magic-link-section" id="magic-links-{{ res.id }}">
+                            <button class="btn btn-primary btn-sm mb-2" onclick="generateMagicLink('{{ res.id }}')">
+                                <i class="fas fa-link"></i> Generate Guest Link
+                            </button>
+                            <div class="magic-links-list" id="magic-links-list-{{ res.id }}">
+                                <!-- Magic links will be loaded here -->
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if res.airbnb_url %}
+                            <a href="{{ res.airbnb_url }}" target="_blank" class="btn btn-outline-secondary btn-sm">View on Airbnb</a>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No reservations found for this property.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Function to refresh reservations from iCal
+function refreshReservations() {
+    const propertyId = document.getElementById('current-property-id').value;
+    const refreshBtn = document.getElementById('refresh-reservations-btn');
+    
+    if (!propertyId) {
+        alert('Property ID not found');
+        return;
+    }
+    
+    // Show loading state
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Refreshing...';
+    refreshBtn.disabled = true;
+    
+    // Call the refresh API
+    fetch(`/api/property/${propertyId}/reservations/refresh`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errData => {
+                throw new Error(errData.error || `HTTP error ${response.status}`);
+            }).catch(() => {
+                throw new Error(`HTTP error ${response.status} - ${response.statusText}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Show success message with stats
+            const stats = data.stats;
+            
+            // Create a success alert div
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <strong>Reservations refreshed successfully!</strong><br>
+                <small>
+                    • ${stats.total_events} events found in iCal<br>
+                    • ${stats.updated} reservations updated<br>
+                    • ${stats.added} new reservations added<br>
+                    • ${stats.deleted} old reservations removed
+                </small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert the alert at the top of the container
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Reload the page after a short delay to show updated reservations
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            alert('Error refreshing reservations: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error refreshing reservations:', error);
+        alert('An error occurred while refreshing reservations: ' + error.message);
+    })
+    .finally(() => {
+        // Restore button state
+        refreshBtn.innerHTML = originalText;
+        refreshBtn.disabled = false;
+    });
+}
+
+// Add a new contact field to the specified reservation
+function addContactField(reservationId) {
+    const container = document.getElementById('contacts-container-' + reservationId);
+    
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'input-group input-group-sm mb-1 contact-entry';
+    
+    entryDiv.innerHTML = `
+        <input type="text" class="form-control contact-name" placeholder="Name">
+        <input type="tel" class="form-control contact-phone" placeholder="+1xxxxxxxxxx">
+        <button class="btn btn-outline-danger btn-sm remove-contact" type="button">&times;</button>
+    `;
+    
+    // Add event listener to the remove button
+    const removeButton = entryDiv.querySelector('.remove-contact');
+    removeButton.addEventListener('click', function() {
+        removeContact(container, entryDiv, reservationId);
+    });
+    
+    container.appendChild(entryDiv);
+    
+    // Show save reminder
+    showSaveReminder(reservationId);
+}
+
+// Function to handle contact removal
+function removeContact(container, entryDiv, reservationId) {
+    container.removeChild(entryDiv);
+    
+    // Show save reminder
+    showSaveReminder(reservationId);
+}
+
+// Function to show save reminder
+function showSaveReminder(reservationId) {
+    // Find the save button for this reservation
+    const saveButton = document.querySelector(`button[onclick="saveContacts('${document.querySelector('#current-property-id').value}', '${reservationId}')"]`);
+    
+    if (saveButton) {
+        // Add pulsating animation to the save button
+        saveButton.classList.add('btn-warning');
+        saveButton.classList.add('pulse-animation');
+        
+        // Find or create a reminder message
+        let reminderMsg = document.getElementById(`save-reminder-${reservationId}`);
+        if (!reminderMsg) {
+            reminderMsg = document.createElement('div');
+            reminderMsg.id = `save-reminder-${reservationId}`;
+            reminderMsg.className = 'alert alert-warning mt-2 mb-2 p-1 small';
+            reminderMsg.innerHTML = '<strong>Remember:</strong> Click "Save Contacts" to apply your changes!';
+            
+            // Insert after the save button
+            saveButton.parentNode.parentNode.insertBefore(reminderMsg, saveButton.parentNode.nextSibling);
+        }
+    }
+}
+
+// Collect and save all contacts for a reservation
+function saveContacts(propertyId, reservationId) {
+    const container = document.getElementById('contacts-container-' + reservationId);
+    const contactEntries = container.querySelectorAll('.contact-entry');
+    
+    const contacts = Array.from(contactEntries).map(entry => {
+        return {
+            name: entry.querySelector('.contact-name').value.trim(),
+            phone: entry.querySelector('.contact-phone').value.trim()
+        };
+    }).filter(contact => contact.name && contact.phone); // Only include complete entries
+    
+    // Add a confirmation dialog when removing all contacts
+    if (contacts.length === 0 && contactEntries.length === 0) {
+        if (!confirm("You're about to remove all additional contacts for this reservation. Continue?")) {
+            return; // User canceled the operation
+        }
+    }
+    
+    console.log(`Saving ${contacts.length} contacts for reservation ${reservationId}`);
+    
+    // Show loading state on the save button
+    const saveButton = document.querySelector(`button[onclick="saveContacts('${propertyId}', '${reservationId}')"]`);
+    if (saveButton) {
+        const originalText = saveButton.innerHTML;
+        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        saveButton.disabled = true;
+    }
+    
+    // Send to backend
+    fetch(`/api/property/${propertyId}/reservations/${reservationId}/contacts`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contacts: contacts })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errData => {
+                throw new Error(errData.error || `HTTP error ${response.status}`);
+            }).catch(() => {
+                throw new Error(`HTTP error ${response.status} - ${response.statusText}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Clear the save reminder if it exists
+            const reminderMsg = document.getElementById(`save-reminder-${reservationId}`);
+            if (reminderMsg) {
+                reminderMsg.remove();
+            }
+            
+            // Reset the save button appearance
+            if (saveButton) {
+                saveButton.innerHTML = '<i class="fas fa-check"></i> Contacts Saved';
+                saveButton.classList.remove('btn-warning');
+                saveButton.classList.remove('pulse-animation');
+                saveButton.classList.add('btn-success');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    saveButton.innerHTML = 'Save Contacts';
+                    saveButton.classList.remove('btn-success');
+                    saveButton.classList.add('btn-primary');
+                    saveButton.disabled = false;
+                }, 2000);
+            }
+        } else {
+            alert('Error saving contact information: ' + (data.error || 'Unknown server error'));
+            // Restore save button
+            if (saveButton) {
+                saveButton.innerHTML = 'Save Contacts';
+                saveButton.disabled = false;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error saving contacts:', error);
+        alert('An error occurred while saving the contact information: ' + error.message);
+        // Restore save button
+        if (saveButton) {
+            saveButton.innerHTML = 'Save Contacts';
+            saveButton.disabled = false;
+        }
+    });
+}
+
+// Add event listeners to all existing remove buttons
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.remove-contact').forEach(button => {
+        button.addEventListener('click', function() {
+            const entryDiv = this.closest('.contact-entry');
+            const container = entryDiv.parentNode;
+            const reservationId = container.id.replace('contacts-container-', '');
+            removeContact(container, entryDiv, reservationId);
+        });
+    });
+
+    // Load magic links for all reservations
+    loadAllMagicLinks();
+
+    // Add CSS for pulse animation and magic link styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+        .magic-link-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+        .magic-link-url {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 4px 6px;
+            border-radius: 3px;
+            word-break: break-all;
+            font-size: 0.75rem;
+        }
+        .magic-link-status {
+            font-weight: bold;
+        }
+        .status-pending { color: #ffc107; }
+        .status-verified { color: #28a745; }
+        .status-expired { color: #6c757d; }
+        .status-revoked { color: #dc3545; }
+    `;
+    document.head.appendChild(style);
+});
+
+// Magic Link Management Functions
+function generateMagicLink(reservationId) {
+    const propertyId = document.getElementById('current-property-id').value;
+
+    if (!confirm('Generate a new guest access link for this reservation?')) {
+        return;
+    }
+
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+    button.disabled = true;
+
+    fetch(`/api/property/${propertyId}/reservations/${reservationId}/magic-link`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errData => {
+                throw new Error(errData.error || `HTTP error ${response.status}`);
+            }).catch(() => {
+                throw new Error(`HTTP error ${response.status} - ${response.statusText}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Show success message with the link
+            showMagicLinkModal(data.magic_link_url, reservationId, data.verification_last_4_digits);
+            // Reload magic links for this reservation
+            loadMagicLinks(reservationId);
+        } else {
+            alert('Error generating magic link: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error generating magic link:', error);
+        alert('An error occurred while generating the magic link: ' + error.message);
+    })
+    .finally(() => {
+        // Restore button state
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function loadAllMagicLinks() {
+    // Load magic links for all reservations on the page
+    const reservationRows = document.querySelectorAll('[id^="magic-links-list-"]');
+    reservationRows.forEach(row => {
+        const reservationId = row.id.replace('magic-links-list-', '');
+        loadMagicLinks(reservationId);
+    });
+}
+
+function loadMagicLinks(reservationId) {
+    const propertyId = document.getElementById('current-property-id').value;
+    const container = document.getElementById(`magic-links-list-${reservationId}`);
+
+    // Check if container exists before proceeding
+    if (!container) {
+        console.warn(`Magic links container not found for reservation ${reservationId}`);
+        return;
+    }
+
+    fetch(`/api/property/${propertyId}/reservations/${reservationId}/magic-links`, {
+        method: 'GET',
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.magic_links) {
+            displayMagicLinks(container, data.magic_links, reservationId);
+        } else {
+            console.warn(`No magic links data for reservation ${reservationId}:`, data);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading magic links:', error);
+    });
+}
+
+function displayMagicLinks(container, magicLinks, reservationId) {
+    // Double-check that container exists (defensive programming)
+    if (!container) {
+        console.error(`Cannot display magic links: container is null for reservation ${reservationId}`);
+        return;
+    }
+
+    if (!magicLinks || magicLinks.length === 0) {
+        container.innerHTML = '<small class="text-muted">No guest links generated</small>';
+        return;
+    }
+
+    container.innerHTML = magicLinks.map(link => {
+        const statusClass = `status-${link.status.replace('_', '-')}`;
+        const isActive = link.is_active && new Date(link.expires_at) > new Date();
+
+        return `
+            <div class="magic-link-item">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <span class="magic-link-status ${statusClass}">
+                        ${formatMagicLinkStatus(link.status)}
+                    </span>
+                    <small class="text-muted">
+                        Created ${formatDate(link.created_at)}
+                    </small>
+                </div>
+                ${isActive ? `
+                    <div class="magic-link-url mb-2">${link.url || 'URL not available'}</div>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-primary" onclick="copyMagicLink('${link.url || ''}', this)">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="revokeMagicLink('${reservationId}', '${link.id}')">
+                            <i class="fas fa-ban"></i> Revoke
+                        </button>
+                    </div>
+                ` : `
+                    <small class="text-muted">Link expired or revoked</small>
+                `}
+            </div>
+        `;
+    }).join('');
+}
+
+function formatMagicLinkStatus(status) {
+    const statusMap = {
+        'pending_verification': 'Pending Verification',
+        'partial_verified': 'Verified',
+        'upgraded_to_full_account': 'Upgraded to Full Account',
+        'expired': 'Expired',
+        'revoked': 'Revoked'
+    };
+    return statusMap[status] || status;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+async function copyMagicLink(url, buttonElement) {
+    if (!url) {
+        alert('No URL to copy');
+        return;
+    }
+
+    const copySuccess = await copyToClipboardWithFallback(url);
+    
+    if (copySuccess) {
+        // Show temporary success feedback
+        const button = buttonElement;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-primary');
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    } else {
+        // Fallback: Select the URL text for manual copying
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('Please manually copy the selected text. Automatic copying failed due to browser restrictions.');
+    }
+}
+
+// Robust clipboard copying with fallbacks
+async function copyToClipboardWithFallback(text) {
+    // First, try the modern Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(text);
+            console.log('Copied using modern Clipboard API');
+            return true;
+        } catch (err) {
+            console.warn('Modern Clipboard API failed:', err);
+        }
+    }
+
+    // Fallback 1: Try the older execCommand method
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            console.log('Copied using execCommand fallback');
+            return true;
+        }
+    } catch (err) {
+        console.warn('execCommand fallback failed:', err);
+    }
+
+    // If all clipboard methods fail, return false
+    console.warn('All clipboard methods failed');
+    return false;
+}
+
+function revokeMagicLink(reservationId, linkId) {
+    if (!confirm('Revoke this guest access link? The guest will no longer be able to use it.')) {
+        return;
+    }
+
+    const propertyId = document.getElementById('current-property-id').value;
+
+    fetch(`/api/property/${propertyId}/reservations/${reservationId}/magic-links/${linkId}/revoke`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload magic links for this reservation
+            loadMagicLinks(reservationId);
+        } else {
+            alert('Error revoking magic link: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error revoking magic link:', error);
+        alert('An error occurred while revoking the magic link: ' + error.message);
+    });
+}
+
+function showMagicLinkModal(url, reservationId, verificationDigits) {
+    // Create a modal to show the generated magic link
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    
+    // Create the verification note with or without digits
+    let verificationNote;
+    if (verificationDigits) {
+        verificationNote = `
+            <strong>Note:</strong> This link will expire 24 hours after the guest's checkout date.
+            The guest will need to verify their identity using the last 4 digits of the booking phone number: <strong>${verificationDigits}</strong>
+        `;
+    } else {
+        verificationNote = `
+            <strong>Note:</strong> This link will expire 24 hours after the guest's checkout date.
+            The guest will need to verify their identity using the last 4 digits of the booking phone number.
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Guest Access Link Generated</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Share this link with your guest:</strong></p>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" value="${url}" readonly id="magic-link-input">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyFromModal(this)">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            ${verificationNote}
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+async function copyFromModal(buttonElement) {
+    const input = document.getElementById('magic-link-input');
+    input.select();
+    
+    const copySuccess = await copyToClipboardWithFallback(input.value);
+    
+    if (copySuccess) {
+        const button = buttonElement;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-secondary');
+
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    } else {
+        // Text is already selected, just inform user
+        alert('Please use Ctrl+C (or Cmd+C on Mac) to copy the selected text.');
+    }
+}
+</script>
+{% endblock %}

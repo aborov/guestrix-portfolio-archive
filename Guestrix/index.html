@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guestrix - AI Guest Concierge That Feels Human</title>
+    <meta name="description" content="Meet Staycee - Your AI guest concierge that reduces daily messages from 20+ to just 3. Give guests instant answers, reclaim your time, keep the human touch.">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1R7VK1G6CV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1R7VK1G6CV');
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="images/android-chrome-512x512.png">
+
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="images/guestrix_logo.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <a href="index.html" class="logo-link">
+                    <img src="images/guestrix_logo.svg" alt="Guestrix Logo" class="logo-image">
+                    <h2 class="brand-name">Guestrix</h2>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="resources.html" class="nav-link">Resources</a>
+                <a href="#contact" class="nav-cta-button">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    You&nbsp;bring the&nbsp;personal touch, <strong class="highlight-green">Staycee</strong>&nbsp;brings the&nbsp;backup
+                </h1>
+                <h2 class="hero-subtitle">
+                    Meet&nbsp;Staycee&nbsp;- Your&nbsp;AI&nbsp;Guest&nbsp;Concierge&nbsp;<br>That&nbsp;Feels&nbsp;Like&nbsp;a&nbsp;Human&nbsp;Assistant
+                </h2>
+                <p class="hero-description">
+                    Give guests instant answers. Reclaim your&nbsp;time. Keep the&nbsp;human&nbsp;touch.
+                </p>
+                
+                <!-- Voice Call Button -->
+                <div class="hero-cta">
+                    <button id="voice-call-button" class="voice-call-btn" data-status="idle">
+                        <i class="fas fa-microphone"></i>
+                        <span class="btn-text">Talk to Staycee</span>
+                    </button>
+                    <div class="call-disclaimers">
+                        <p class="disclaimer-text">Demo button uses sample data about a non-existent property.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section">
+        <div class="container">
+            <div class="two-column">
+                <div class="column-left">
+                    <h3 class="section-title">Less Phone Time. More Growth Time.</h3>
+                    <p class="section-text">
+                        It's 6 PM. You're trying to enjoy dinner when your phone buzzes: "Hey, what's the&nbsp;WiFi password again?"
+                    </p>
+                    <p class="section-text">
+                        Now multiply that across 3&nbsp;properties, 10&nbsp;guests, and dozens of&nbsp;little&nbsp;questions.
+                    </p>
+                    <p class="section-text">
+                        These small moments add up—taking time away from scaling your business.
+                    </p>
+                    <p class="section-text">
+                        <strong>Staycee takes over the repeat questions so you can stay focused on what really matters.</strong>
+                    </p>
+                </div>
+                <div class="column-right">
+                    <iframe class="video-iframe" src="https://www.youtube.com/embed/TVivMjOuljQ?enablejsapi=1" title="How Staycee Works" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h3 class="section-title centered">How It Works</h3>
+                <p class="section-subtitle">Staycee handles your guest messages instantly, personally, and 24/7.</p>
+                <p class="section-subtitle">Here's what you get:</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="feature-title">Instant replies</h4>
+                    <p class="feature-description">Guests get helpful answers in seconds, anytime</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h4 class="feature-title">Custom for every property</h4>
+                    <p class="feature-description">Staycee sounds like <em>you</em>, not&nbsp;a&nbsp;robot</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h4 class="feature-title">Works with Airbnb and&nbsp;Vrbo</h4>
+                    <p class="feature-description">Seamlessly fits into your hosting setup</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <h4 class="feature-title">Communicates how you&nbsp;do</h4>
+                    <p class="feature-description">Text or call, Staycee uses the&nbsp;channels you&nbsp;prefer</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Staycee Section -->
+    <section class="why-staycee">
+        <div class="container">
+            <div class="two-column">
+                <div class="column-left">
+                    <h3 class="section-title">Why Staycee?</h3>
+                    <p class="section-text">
+                        Most AI tools pull generic information. Staycee is trained on your property.
+                    </p>
+                    <p class="section-text">
+                        She knows where you keep the&nbsp;wine glasses, how the&nbsp;washer works, and which café around the&nbsp;corner serves the&nbsp;best croissants. We onboard you with a&nbsp;free personal call to&nbsp;capture all those details guests <em>really</em> care&nbsp;about.
+                    </p>
+                </div>
+                <div class="column-right">
+                    <img src="images/staycee-iphone.png" alt="Staycee on iPhone" class="section-image" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Section -->
+    <section class="social-proof">
+        <div class="container">
+            <div class="section-header">
+                <h3 class="section-title centered">Hear From Our Hosts</h3>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "I used to step&nbsp;out of&nbsp;family events to&nbsp;answer guest calls. Once, I missed a&nbsp;moment at my cousin's graduation just to&nbsp;repeat check-in instructions. As&nbsp;a&nbsp;boutique hotel owner, it felt like I&nbsp;was always on-call. Now, Staycee handles those questions instantly. I've&nbsp;got my time back and my guests are still smiling."
+                    </div>
+                    <div class="testimonial-author">— Tom, Boutique Hotel Owner in&nbsp;Austin,&nbsp;TX</div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "A guest got locked out when the&nbsp;smart lock failed. I was asleep and didn't see the message until morning. I&nbsp;had to refund the entire stay. As&nbsp;a&nbsp;property owner, that stung. Staycee can help guests right away, telling them about the&nbsp;on-property lockbox, even if I'm&nbsp;offline. It's been a&nbsp;game-changer."
+                    </div>
+                    <div class="testimonial-author">— Tina, Property Owner in&nbsp;Santa&nbsp;Cruz,&nbsp;CA</div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "At one point, I&nbsp;was co-hosting five properties. I'd constantly get messages like, 'Can I check in early?', sometimes while the&nbsp;cleaner was still inside. Juggling those requests across platforms was stressful and easy to&nbsp;miss. With Staycee, guests get a&nbsp;clear, instant response based on each property's setup. Now I&nbsp;spend less time texting and more time actually running the&nbsp;business."
+                    </div>
+                    <div class="testimonial-author">— Priya, Professional Co-Host in&nbsp;Seattle,&nbsp;WA</div>
+                </div>
+            </div>
+            
+            <div class="overall-stats">
+                <div class="stat">
+                    <span class="stat-icon">✅</span>
+                    <span class="stat-text">Hosts save 6+&nbsp;hours a&nbsp;week on&nbsp;average</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">✅</span>
+                    <span class="stat-text">40%&nbsp;fewer guest complaints</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">✅</span>
+                    <span class="stat-text">Happier guests, more 5-star reviews</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-header">
+                <h3 class="section-title centered">Frequently Asked Questions</h3>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How is Staycee different from common AI assistants? Can my guests just use ChatGPT instead?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Common AI chatbots can only offer generic responses. Staycee leverages property-specific knowledge to provide more accurate answers and unique host recommendations, going beyond what standard AI tools can do for your guests.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How can Staycee improve my reviews and occupancy rate?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>The host and Staycee form a team offering premium guest support, driving satisfaction, higher occupancy, and stronger reviews.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>How does Staycee work with hosts?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>While hosts build strong personal connections and handle unique guest needs, Staycee specializes in providing property-specific guest communication. She offers immediate, detailed support in most situations, including troubleshooting and step-by-step instructions for appliances, property amenities, and minor needs, like finding extra blankets or coffee cups. Hosts enjoy improved work-life balance, knowing that guests are taken care of by Staycee.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h4>Is Staycee easy to set up?</h4>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Staycee's setup is easy. You can start by importing data from your listings and existing documents (guest guide, house rules) and then add missing details. You retain full control to update property knowledge anytime in your host portal, ensuring Staycee always has the information needed to deliver exceptional guest support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="contact" class="cta-section">
+        <div class="container">
+            <div class="two-column">
+                <div class="column-left">
+                    <h3 class="section-title">We believe guest communication should feel personal, not robotic</h3>
+                    <p class="section-text">
+                        Staycee blends the human touch with smart automation, giving guests what they need, when they need it, while you focus on the bigger picture.
+                    </p>
+                    <p class="section-text">
+                        Want to see how Staycee works for your property?
+                    </p>
+                    <p class="section-text">
+                        Book a quick, no-pressure demo. We'll walk you through how exactly Staycee would help with your most common guest questions.
+                    </p>
+                </div>
+                <div class="column-right">
+                    <div class="waitlist-form">
+                        <h4 class="form-title">Get Started Today</h4>
+                        <form id="waitlistForm" class="form">
+                            <div class="form-group">
+                                <input type="text" id="firstName" name="firstName" placeholder="First Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="lastName" name="lastName" placeholder="Last Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="waitlistEmail" name="email" placeholder="Email Address" required>
+                            </div>
+                            <input type="hidden" id="message" name="message" value="Booked the Demo on the main page">
+                            <button type="submit" class="form-submit-btn">
+                                <span class="btn-text">Book the Demo</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="images/guestrix_logo.svg" alt="Guestrix Logo" class="footer-logo-image">
+                    <h3 class="footer-brand-name">Guestrix</h3>
+                </div>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About Us</a>
+                    <a href="resources.html">Resources</a>
+                </div>
+                <div class="footer-contact">
+                    <p>&copy; 2025 Guestrix. All rights reserved.</p>
+                    <p>
+                        <a href="terms.html" target="_blank" rel="noopener noreferrer">Terms of Use</a> |
+                        <a href="privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a><br>
+                        <a href="cookie.html" target="_blank" rel="noopener noreferrer">Cookie Policy</a>
+                    </p>
+                    <p>Contact: <a href="mailto:hello@guestrix.ai">hello@guestrix.ai</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="success-modal">
+        <div class="success-modal-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Thank You!</h3>
+            <p>Your submission was successful. We'll reach out to you soon!</p>
+            <button class="success-modal-close" onclick="closeSuccessModal()">Got it</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js" type="module"></script>
+    <script src="scripts/voice-call.js" type="module"></script>
+    <script src="script.js" type="module"></script>
+</body>
+</html>

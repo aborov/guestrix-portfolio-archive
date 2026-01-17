@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if property and property.id %}Edit Property{% else %}New Property{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{% if property and property.id %}Edit Property: {{ property.name }}{% else %}Create New Property{% endif %}</h1>
+    <p>User: {{ user_id }}</p>
+    {% if property and property.id %}
+        <p>Property ID: {{ property.id }}</p>
+        <form method="POST" action="{{ url_for('views.property_edit', property_id=property.id) }}">
+    {% else %}
+        <form method="POST" action="{{ url_for('views.property_new') }}">
+    {% endif %}
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Property Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ property.name if property else '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" name="address" value="{{ property.address if property else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3">{{ property.description if property else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="ical_url" class="form-label">iCal URL</label>
+            <input type="url" class="form-control" id="ical_url" name="ical_url" value="{{ property.ical_url if property else '' }}" placeholder="https://your-calendar-provider.com/link.ics">
+            <div id="icalHelp" class="form-text">Optional: Enter the iCal link for your property's reservations (e.g., from Airbnb, VRBO).</div>
+        </div>
+
+        <!-- Check-in/Check-out Times Section -->
+        <h4 class="mt-4">Check-in/Check-out Times</h4>
+        <div class="card mb-3 p-3">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="check_in_time" class="form-label">Check-in Time</label>
+                    <input type="time" class="form-control" id="check_in_time" name="check_in_time"
+                           value="{{ property.check_in_time if property and property.check_in_time else '' }}">
+                    <div class="form-text">Standard check-in time for guests (e.g., 15:00)</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="check_out_time" class="form-label">Check-out Time</label>
+                    <input type="time" class="form-control" id="check_out_time" name="check_out_time"
+                           value="{{ property.check_out_time if property and property.check_out_time else '' }}">
+                    <div class="form-text">Standard check-out time for guests (e.g., 11:00)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WiFi Details Section -->
+        <h4 class="mt-4">WiFi Details</h4>
+        <div class="card mb-3 p-3">
+            <div class="mb-3">
+                <label for="wifi_network" class="form-label">WiFi Network Name</label>
+                <input type="text" class="form-control" id="wifi_network" name="wifi_network"
+                       value="{{ property.wifi_details.network if property and property.wifi_details else '' }}">
+            </div>
+            <div class="mb-3">
+                <label for="wifi_password" class="form-label">WiFi Password</label>
+                <input type="text" class="form-control" id="wifi_password" name="wifi_password"
+                       value="{{ property.wifi_details.password if property and property.wifi_details else '' }}">
+                <div class="form-text">This information will be provided to guests through the concierge.</div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">{% if property and property.id %}Update Property{% else %}Create Property{% endif %}</button>
+        <a href="{{ url_for('views.properties_list') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

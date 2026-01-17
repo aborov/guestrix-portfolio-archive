@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "paths": {
+    "/waitlist": {
+      "name": "/waitlist",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/calculator": {
+      "name": "/calculator",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/waitlist/calculator": {
+      "name": "/waitlist/calculator",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/waitlist/fee-comparison": {
+      "name": "/waitlist/fee-comparison",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/waitlist/listing-optimizer": {
+      "name": "/waitlist/listing-optimizer",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/waitlist/rating": {
+      "name": "/waitlist/rating",
+      "lambdaFunction": "waitlistapi",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

@@ -1,0 +1,3235 @@
+{% extends "base.html" %}
+
+{% block title %}Guestrix - Dashboard{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script>
+// Firebase configuration - Load securely from API endpoint
+let firebaseConfig = null;
+let firebaseInitialized = false;
+
+// Initialize Firebase securely
+async function initializeFirebaseSecurely() {
+    if (firebaseInitialized) {
+        return;
+    }
+
+    try {
+        console.log("Loading Firebase configuration from secure endpoint...");
+        
+        const response = await fetch('/api/firebase-config', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to load Firebase config: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success || !data.config) {
+            throw new Error('Invalid Firebase config response');
+        }
+
+        firebaseConfig = data.config;
+        console.log("Firebase configuration loaded securely");
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized securely");
+        } else {
+            console.log("Firebase already initialized");
+        }
+        
+        firebaseInitialized = true;
+    } catch (error) {
+        console.error('Failed to initialize Firebase:', error);
+        throw error;
+    }
+}
+
+// Initialize Firebase on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFirebaseSecurely().catch(error => {
+        console.error('Firebase initialization failed:', error);
+    });
+});
+</script>
+
+<!-- Initialize reservations data -->
+<script>
+{% if reservations_data %}
+window.reservations = {{ reservations_data|tojson|safe }};
+{% else %}
+window.reservations = [];
+{% endif %}
+
+{% if temp_id_token %}
+// For temporary users (magic link access)
+window.tempIdToken = {{ temp_id_token|tojson|safe }};
+window.isTemporaryUser = true;
+console.log("Temporary user detected with ID token");
+{% else %}
+window.isTemporaryUser = false;
+{% endif %}
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Ensure the page root matches the visible viewport on mobile and prevent outer-page scrolling */
+    .app-page-root {
+        height: 100vh !important; /* fallback */
+        height: 100svh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important; /* ensure Tailwind min-h-screen can't override */
+        min-height: 100svh !important;
+        min-height: 100dvh !important;
+        overflow-y: hidden !important;
+    }
+
+    /* Hide default navbar */
+    .navbar { display: none !important; }
+    .container.mt-4 { margin-top: 0 !important; padding: 0 !important; max-width: none !important; }
+    footer { display: none !important; }
+
+    /* Override default margins that interfere with compact layout */
+    .chat-container p {
+        margin-bottom: 0 !important;
+    }
+
+    .chat-message-wrapper p {
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    header h2 {
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    /* Remove margins from chat content specifically */
+    .chat-message-content p {
+        margin: 0 !important;
+    }
+
+    /* Override any default paragraph spacing in messages */
+    #chat-messages p {
+        margin-bottom: 0 !important;
+    }
+
+    /* Ensure brand text has no extra spacing */
+    .layout-container header h2 {
+        margin: 0 !important;
+    }
+
+    /* Override Tailwind and browser defaults for all text elements in chat */
+    .chat-container * {
+        margin-block-start: 0 !important;
+        margin-block-end: 0 !important;
+    }
+
+    /* Specifically target paragraph elements that might have default margins */
+    .chat-message-wrapper * p,
+    .chat-message-content * p,
+    .chat-container * p {
+        margin: 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    /* Remove any line height issues */
+    .chat-message-name,
+    .chat-message-time {
+        margin: 0 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Fix "Ask Staycee" header margin */
+    .chat-area p {
+        margin: 0 !important;
+    }
+
+    /* Specifically target the chat header */
+    .chat-area > div:first-child p {
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Chat message styles - more compact */
+    .chat-message {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
+    .user-message {
+        background-color: var(--saffron);
+        margin-left: 20%;
+        margin-right: 5px;
+        color: var(--dark-purple);
+    }
+    .ai-message {
+        background-color: #f5f5f5;
+        margin-right: 20%;
+        margin-left: 5px;
+        color: var(--dark-purple);
+    }
+    .system-message {
+        background-color: var(--light-cyan);
+        margin: 6px 0;
+        padding: 6px 10px;
+        font-size: 0.8em;
+        color: var(--dark-purple);
+        border-left: 3px solid var(--persian-green);
+    }
+
+    /* Compact chat layout */
+    .chat-message-header {
+        margin-bottom: 4px;
+    }
+
+    .chat-message-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .chat-message-time {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .chat-message-content {
+        font-size: 0.875rem;
+        line-height: 1.4;
+        margin-bottom: 0;
+    }
+
+    .chat-avatar {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+    }
+
+    .chat-message-wrapper {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Date separator styles - very compact */
+    .date-separator {
+        display: flex;
+        align-items: center;
+        margin: 0.75rem 0 0.5rem 0;
+        font-size: 0.6875rem;
+        color: var(--dark-purple);
+        opacity: 0.6;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .date-separator::before,
+    .date-separator::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--persian-green);
+        opacity: 0.3;
+    }
+
+    .date-separator::before {
+        margin-right: 0.5rem;
+    }
+
+    .date-separator::after {
+        margin-left: 0.5rem;
+    }
+
+    .date-separator-text {
+        white-space: nowrap;
+        padding: 0.125rem 0.25rem;
+        background: var(--light-cyan);
+        border-radius: 0.25rem;
+        font-size: 0.625rem;
+    }
+
+    /* Reservation card hover effects */
+    .reservation-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(42, 157, 143, 0.2);
+    }
+
+    .reservation-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.15);
+    }
+
+    /* Active reservation highlighting */
+    .reservation-card.border-persian-green {
+        border-color: var(--persian-green) !important;
+        border-width: 2px !important;
+    }
+
+    /* Status badges */
+    .reservation-card .bg-green-100 {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: rgb(22, 101, 52);
+    }
+
+    .reservation-card .bg-gray-100 {
+        background-color: rgba(107, 114, 128, 0.1);
+        color: rgb(75, 85, 99);
+    }
+
+    /* Layout constraints for proper scrolling */
+    .main-layout {
+        height: calc(100vh - 70px); /* fallback */
+        height: calc(100svh - 70px);
+        height: calc(100dvh - 70px);
+        max-height: calc(100vh - 70px);
+        max-height: calc(100svh - 70px);
+        max-height: calc(100dvh - 70px);
+        overflow: hidden; /* Prevent main layout from scrolling */
+    }
+
+    .chat-area {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0; /* allow flex container to shrink within the fixed viewport */
+    }
+
+    .chat-messages-wrapper {
+        flex: 1;
+        min-height: 0; /* Important: allows flex item to shrink below content size */
+        overflow: hidden; /* Ensure wrapper doesn't create scroll */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Custom scrollbar */
+    .chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .chat-container::-webkit-scrollbar-track {
+        background: var(--light-cyan);
+    }
+    .chat-container::-webkit-scrollbar-thumb {
+        background: var(--persian-green);
+        border-radius: 3px;
+    }
+
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+        .main-layout {
+            /* Use dynamic viewport units so mobile browser chrome doesn't obscure content */
+            height: calc(100vh - 90px); /* fallback */
+            height: calc(100svh - 90px);
+            height: calc(100dvh - 90px);
+            max-height: calc(100vh - 90px);
+            max-height: calc(100svh - 90px);
+            max-height: calc(100dvh - 90px);
+        }
+
+        .mobile-header-compact {
+            padding: 12px 16px;
+        }
+
+        /* Improve mobile chat experience */
+        .chat-container {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Mobile-specific notifications */
+        .notification-mobile {
+            margin-left: 16px;
+            margin-right: 16px;
+            margin-top: 16px;
+        }
+
+        /* Improve touch targets */
+        button {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Better mobile scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        /* Ensure chat input area has enough space on mobile */
+        .chat-area {
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Reduce chat input padding on mobile to save space */
+        .chat-area > div:last-child {
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Make chat header more compact on mobile */
+        .chat-area > div:first-child {
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Reduce messages wrapper padding */
+        .chat-messages-wrapper {
+            padding: 0.125rem 0.25rem !important;
+        }
+
+        /* Make header even more compact on mobile */
+        header {
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Reduce chat container padding */
+        .chat-container {
+            padding: 0.5rem !important;
+        }
+
+        /* Smaller font sizes for mobile */
+        .chat-message-name {
+            font-size: 0.8125rem !important;
+        }
+
+        .chat-message-time {
+            font-size: 0.75rem !important;
+        }
+
+        .chat-message-content {
+            font-size: 0.8125rem !important;
+            line-height: 1.35 !important;
+        }
+
+        /* Smaller chat input font */
+        #chat-input {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Adjust button text */
+        #send-message,
+        #record-message {
+            font-size: 0.6875rem !important;
+        }
+
+        /* Smaller chat header */
+        .chat-area > div:first-child p {
+            font-size: 1.25rem !important;
+        }
+    }
+
+    /* Small mobile phones */
+    @media (max-width: 480px) {
+        .main-layout {
+            /* Ensure full interface fits within visible area on very small screens */
+            height: calc(100vh - 85px); /* fallback */
+            height: calc(100svh - 85px);
+            height: calc(100dvh - 85px);
+            max-height: calc(100vh - 85px);
+            max-height: calc(100svh - 85px);
+            max-height: calc(100dvh - 85px);
+        }
+
+        .mobile-header-compact {
+            padding: 2px 8px;
+        }
+
+        /* Extra compact spacing for small screens */
+        .chat-area > div:first-child {
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        .chat-area > div:last-child {
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        .chat-messages-wrapper {
+            padding: 0.125rem 0.25rem !important;
+        }
+
+        /* Ultra-compact header for very small screens */
+        header {
+            padding: 0.125rem 0.25rem !important;
+        }
+
+        /* Minimal chat container padding */
+        .chat-container {
+            padding: 0.25rem !important;
+        }
+
+        /* Smaller font sizes for better mobile experience */
+        .chat-message-name {
+            font-size: 0.75rem !important;
+        }
+
+        .chat-message-time {
+            font-size: 0.6875rem !important;
+        }
+
+        .chat-message-content {
+            font-size: 0.75rem !important;
+            line-height: 1.3 !important;
+        }
+
+        /* Smaller chat input */
+        #chat-input {
+            font-size: 0.75rem !important;
+        }
+
+        /* Smaller buttons */
+        #send-message,
+        #record-message {
+            font-size: 0.625rem !important;
+        }
+
+        /* Even smaller chat header for tiny screens */
+        .chat-area > div:first-child p {
+            font-size: 1.125rem !important;
+        }
+
+        /* Extra compact date separators on small screens */
+        .date-separator {
+            margin: 0.5rem 0 0.25rem 0 !important;
+            font-size: 0.5625rem !important;
+        }
+
+        .date-separator-text {
+            font-size: 0.5rem !important;
+            padding: 0.0625rem 0.125rem !important;
+        }
+    }
+
+    /* Voice button states */
+    #voice-call-button {
+        background: var(--persian-green) !important; /* Idle state to Persian Green */
+        color: white !important;
+        box-shadow: none !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #voice-call-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(22, 16, 50, 0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    #voice-call-button:hover {
+        background: rgba(233, 196, 106, 0.9) !important;
+        color: var(--dark-purple) !important;
+        box-shadow: none !important;
+        transform: translateY(-2px) !important;
+    }
+
+    #voice-call-button:hover::before {
+        left: 100%;
+    }
+
+    #voice-call-button.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, #9ca3af 0%, rgba(156, 163, 175, 0.9) 50%, #9ca3af 100%) !important;
+        color: white !important;
+        box-shadow: none !important;
+    }
+
+    #voice-call-button.active {
+        background: linear-gradient(135deg, var(--bittersweet) 0%, rgba(238, 96, 85, 0.9) 50%, var(--bittersweet) 100%) !important;
+        color: white !important;
+        box-shadow: none !important;
+    }
+
+    #voice-call-button.active:hover {
+        background: linear-gradient(135deg, rgba(238, 96, 85, 0.95) 0%, rgba(238, 96, 85, 0.85) 50%, rgba(238, 96, 85, 0.95) 100%) !important;
+        color: white !important;
+        box-shadow: none !important;
+    }
+
+    /* Make modal scrollable but contained */
+    #modal-reservations-list {
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-right: 4px; /* Space for scrollbar */
+    }
+
+    /* Custom scrollbar for modal */
+    #modal-reservations-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #modal-reservations-list::-webkit-scrollbar-track {
+        background: var(--light-cyan);
+        border-radius: 3px;
+    }
+
+    #modal-reservations-list::-webkit-scrollbar-thumb {
+        background: var(--persian-green);
+        border-radius: 3px;
+    }
+
+    #modal-reservations-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(42, 157, 143, 0.8);
+    }
+
+    /* Compact modal cards - fit 2 cards without scroll */
+    .reservation-card {
+        padding: 12px !important;
+    }
+
+    .reservation-card h4 {
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .reservation-card .property-address {
+        font-size: 0.75rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .reservation-card .space-y-3 > div {
+        margin-bottom: 8px !important;
+    }
+
+    .reservation-card .text-sm {
+        font-size: 0.75rem !important;
+    }
+
+    .reservation-card .grid {
+        gap: 8px !important;
+    }
+
+    .reservation-card button {
+        padding: 6px 16px !important;
+        font-size: 0.75rem !important;
+    }
+
+    .reservation-card .mt-4 {
+        margin-top: 8px !important;
+    }
+
+    .reservation-card .pt-3 {
+        padding-top: 8px !important;
+    }
+
+    .reservation-card .badge {
+        font-size: 0.75rem;
+    }
+
+    .reservation-card .badge-success {
+        background-color: #28a745;
+    }
+
+    .reservation-card .badge-primary {
+        background-color: var(--persian-green);
+    }
+
+    .reservation-card .badge-secondary {
+        background-color: #6c757d;
+    }
+
+    .reservation-card .card-title {
+        color: var(--dark-purple);
+        font-size: 1.1rem;
+    }
+
+    .reservation-card .card-body {
+        padding: 1rem;
+    }
+
+    .reservation-card .card-header {
+        background-color: rgba(42, 157, 143, 0.1);
+        border-bottom: 1px solid rgba(42, 157, 143, 0.2);
+        padding: 0.75rem 1rem;
+    }
+
+    /* Make modal more compact */
+    #modal-reservations-list {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    #modal-reservations-list .card {
+        font-size: 0.9rem;
+    }
+
+    #modal-reservations-list .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    /* Handle layout when property indicator is visible and causes wrapping */
+    .chat-header-with-indicator {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
+
+    .chat-header-with-indicator .voice-text-mobile {
+        display: none !important;
+    }
+
+    .chat-header-with-indicator .voice-text-desktop {
+        display: inline !important;
+    }
+
+    /* Default behavior when no indicator or on larger screens */
+    @media (min-width: 768px) {
+        .chat-header-with-indicator {
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            text-align: left !important;
+            gap: 0.75rem !important;
+        }
+    }
+
+    /* Feedback Modal Styles */
+    .feedback-emoji-btn, .feedback-star-btn {
+        background: none;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feedback-emoji-btn:hover, .feedback-star-btn:hover {
+        background-color: var(--light-cyan);
+        border-color: var(--persian-green);
+        transform: scale(1.1);
+    }
+
+    .feedback-emoji-btn.selected {
+        background-color: var(--persian-green);
+        border-color: var(--persian-green);
+        color: white;
+    }
+
+    .feedback-star-btn {
+        color: #d1d5db;
+    }
+
+    .feedback-star-btn:hover {
+        color: var(--saffron);
+    }
+
+    .feedback-star-btn.selected {
+        color: var(--saffron);
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Position feedback modal at bottom-right above input/beta note */
+    #feedback-modal { bottom: 120px !important; right: 12px !important; left: auto !important; transform: none !important; }
+    @media (max-width: 768px) { #feedback-modal { bottom: 100px !important; right: 8px !important; width: min(90vw, 320px) !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="relative flex size-full flex-col bg-light-cyan overflow-x-hidden app-page-root">
+    <div class="layout-container flex h-full grow flex-col">
+        <!-- Header -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-persian-green/20 px-4 md:px-8 py-2 md:py-3 bg-white/80 backdrop-blur-sm mobile-header-compact">
+            <div class="flex items-center gap-2 md:gap-4 text-dark-purple">
+                <!-- Mobile menu toggle removed -->
+                <div class="size-8 md:size-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h2 class="text-dark-purple text-lg md:text-xl font-bold leading-tight tracking-[-0.015em]">Guestrix</h2>
+            </div>
+            <div class="flex items-center gap-2 md:gap-4">
+                <span class="text-dark-purple text-sm md:text-lg font-medium hidden md:inline">
+                    Welcome, <span id="guest-name">{{ guest_name if guest_name else 'Guest' }}</span>!
+                </span>
+                <!-- Temporarily commented out - Magic-link-specific "Complete Setup" button
+                {% if is_temporary_user and show_upgrade_prompt %}
+                <button onclick="openProfileModal()"
+                        class="hidden md:flex items-center gap-1 px-2 py-1 bg-saffron/20 text-dark-purple text-xs font-medium rounded-full hover:bg-saffron/30 transition-colors"
+                        title="Complete your account signup">
+                    <i class="fas fa-user-plus text-xs"></i>
+                    <span>Complete Signup</span>
+                </button>
+                {% endif %}
+                -->
+                <button id="reservations-button" class="flex items-center justify-center rounded-full h-8 md:h-10 bg-persian-green/10 text-dark-purple hover:bg-persian-green/20 transition-colors p-1 md:p-2" title="Your Reservations">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" class="md:w-5 md:h-5" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Zm-96-88v64a8,8,0,0,1-16,0V132.94l-4.42,2.22a8,8,0,0,1-7.16-14.32l16-8A8,8,0,0,1,112,120Zm59.16,30.45L152,176h16a8,8,0,0,1,0,16H136a8,8,0,0,1-6.4-12.8l28.78-38.37A8,8,0,1,0,145.07,132a8,8,0,1,1-13.85-8A24,24,0,0,1,176,136,23.76,23.76,0,0,1,171.16,150.45Z"/>
+                    </svg>
+                </button>
+                <button id="profile-button" class="flex items-center justify-center rounded-full h-8 md:h-10 bg-persian-green/10 text-dark-purple hover:bg-persian-green/20 transition-colors p-1 md:p-2" title="Profile Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" class="md:w-5 md:h-5" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path>
+                    </svg>
+                </button>
+                <!-- Hide logout button for temporary users coming via magic link -->
+                {% if not is_temporary_user %}
+                <button onclick="logout()"
+                        class="flex items-center justify-center rounded-full h-8 md:h-10 px-2 md:px-4 bg-persian-green text-white text-xs md:text-sm font-medium hover:bg-persian-green/90 transition-colors">
+                    <span class="hidden md:inline">Logout</span>
+                    <svg class="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Notifications -->
+        {% if is_test_reservation %}
+        <div class="mx-4 md:mx-6 mt-4 notification-mobile">
+            <div class="bg-saffron/20 border-l-4 border-saffron p-3 md:p-4 rounded-r-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-saffron mr-2"></i>
+                    <h4 class="text-dark-purple font-semibold text-sm md:text-base">Test Reservation</h4>
+                </div>
+                <p class="text-dark-purple/80 mt-1 text-sm md:text-base">This is a test reservation created for development purposes. In a production environment, you would see your actual reservations here.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if no_reservation_message %}
+        <div class="mx-4 md:mx-6 mt-4 notification-mobile">
+            <div class="bg-bittersweet/20 border-l-4 border-bittersweet p-3 md:p-4 rounded-r-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-bittersweet mr-2"></i>
+                    <h4 class="text-dark-purple font-semibold text-sm md:text-base">No Reservations Found</h4>
+                </div>
+                <p class="text-dark-purple/80 mt-1 text-sm md:text-base">{{ no_reservation_message }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        <div class="gap-2 md:gap-4 px-2 md:px-4 flex flex-1 justify-center py-2 md:py-4 main-layout bg-light-cyan overflow-hidden min-h-0">
+                    <!-- Chat Area -->
+                    <div class="layout-content-container flex flex-col max-w-[960px] flex-1 chat-area min-h-0">
+                        <!-- Chat Header -->
+                        <div id="chat-header" class="flex flex-wrap justify-between items-center gap-2 md:gap-3 p-1 md:p-2 bg-white/50 rounded-t-xl">
+                            <div class="flex flex-wrap items-baseline gap-2">
+                                <p class="text-dark-purple tracking-light text-3xl md:text-4xl font-bold leading-tight">Ask Staycee</p>
+                                <!-- Property indicator - only shown when multiple reservations exist -->
+                                <p id="property-indicator" class="text-persian-green text-sm md:text-lg font-medium hidden">
+                                    about <span id="current-property-name">Property</span>
+                                </p>
+                            </div>
+                            <!-- Call Controls -->
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <!-- Mute Mic Button (shown only during an active call) -->
+                                <button id="mute-mic-button"
+                                        class="hidden flex items-center justify-center gap-2 rounded-2xl h-12 md:h-16 px-4 md:px-6 text-white text-base md:text-lg font-semibold transition-colors duration-300 bg-dark-purple"
+                                        aria-pressed="false"
+                                        title="Mute microphone">
+                                    <!-- Mic icon (unmuted) -->
+                                    <svg class="icon-mic w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3z" fill="currentColor"/>
+                                        <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                        <path d="M12 19v3M8 22h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <!-- Mic off icon (muted) -->
+                                    <svg class="icon-mic-off w-6 h-6 md:w-7 md:h-7 hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path d="M15 10v2a3 3 0 0 1-4.879 2.357M9 5a3 3 0 0 1 6 0v3M4 4l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M5 11a7 7 0 0 0 11.5 5.303M12 19v3M8 22h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <span class="mute-text">Mute</span>
+                                </button>
+                                <!-- Voice Call Button (End Call when active) -->
+                                <button id="voice-call-button"
+                                        class="flex items-center justify-center gap-3 md:gap-4 rounded-2xl h-12 md:h-16 px-6 md:px-8 text-white text-lg md:text-xl font-semibold transition-colors duration-300"
+                                       data-status="idle">
+                                    <svg class="w-7 h-7 md:w-8 md:h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <!-- Speaker body -->
+                                        <path d="M3 10h3l4-3v10l-4-3H3z" fill="currentColor"/>
+                                        <!-- Sound waves -->
+                                        <path d="M14 9c1.657 1.657 1.657 4.343 0 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                        <path d="M17 6c3.314 3.314 3.314 8.686 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                    </svg>
+                                    <span class="voice-text-desktop hidden md:inline">Call Staycee</span>
+                                    <span class="voice-text-mobile md:hidden">Call</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages -->
+                        <div class="flex-1 bg-white/50 px-1 md:px-2 py-0.5 md:py-1 flex flex-col min-h-0 chat-messages-wrapper">
+                            <div class="chat-container flex-1 overflow-y-auto rounded-lg bg-white/70 p-2 md:p-3" id="chat-messages">
+                                <!-- Auto-generated greeting will be inserted here by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Beta Disclaimer -->
+                        <div class="bg-white/30 px-1 md:px-2 py-0.5 md:py-1 border-t border-persian-green/10">
+                            <div class="flex items-center justify-center gap-2">
+                                <p class="text-dark-purple/70 text-xs font-medium">Staycee is in beta testing and can make mistakes.</p>
+                            </div>
+                        </div>
+
+                        <!-- Chat Input -->
+                        <div class="bg-white/50 rounded-b-xl p-1 md:p-2">
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 md:size-10 bg-saffron flex items-center justify-center text-dark-purple font-bold shrink-0 text-sm md:text-base">
+                                    {{ guest_name[0] if guest_name else 'G' }}
+                                </div>
+                                <div class="flex flex-1 items-stretch rounded-xl h-10 md:h-12">
+                                    <input id="chat-input"
+                                           placeholder="Type your message..."
+                                           class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-l-xl text-dark-purple focus:outline-0 focus:ring-2 focus:ring-persian-green border border-persian-green/20 bg-white focus:border-persian-green h-full placeholder:text-dark-purple/50 px-3 md:px-4 text-sm md:text-base font-normal leading-normal" />
+                                    <div class="flex border border-l-0 border-persian-green/20 bg-white items-center justify-center pr-2 rounded-r-xl">
+                                        <button id="record-message"
+                                                class="flex items-center justify-center w-6 md:w-8 h-6 md:h-8 rounded-full bg-persian-green/10 text-persian-green hover:bg-persian-green/20 transition-colors mr-1 md:mr-2"
+                                                title="Record Message">
+                                            <i class="fas fa-microphone text-xs md:text-sm"></i>
+                                        </button>
+                                        <button id="send-message"
+                                                class="flex items-center justify-center rounded-full h-6 md:h-8 px-3 md:px-4 bg-persian-green text-white text-xs md:text-sm font-medium hover:bg-persian-green/90 transition-colors">
+                                            Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profile-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 md:p-6 transform transition-all max-h-[90vh] overflow-y-auto mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-dark-purple">My Profile</h3>
+                <button id="close-profile-modal" class="text-dark-purple/50 hover:text-dark-purple transition-colors">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Success Message -->
+            <div id="profile-update-success" class="hidden mb-4 p-3 bg-persian-green/10 border border-persian-green/20 rounded-lg">
+                <div class="flex items-center gap-2 text-persian-green">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="font-medium">Profile updated successfully!</span>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="profile-update-error" class="hidden mb-4 p-3 bg-bittersweet/10 border border-bittersweet/20 rounded-lg">
+                <div class="flex items-center gap-2 text-bittersweet">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span class="font-medium" id="profile-error-text">An error occurred while updating your profile.</span>
+                </div>
+            </div>
+
+            <!-- Profile Avatar Section -->
+            <div class="flex items-center gap-4 p-4 bg-light-cyan rounded-lg mb-6">
+                <div id="profile-modal-avatar" class="bg-saffron rounded-full size-16 flex items-center justify-center text-dark-purple font-bold text-xl">
+                    {{ guest_name[0] if guest_name else 'G' }}
+                </div>
+                <div class="flex-1">
+                    <h4 id="profile-modal-name" class="font-semibold text-dark-purple text-lg">{{ guest_name if guest_name else 'Guest' }}</h4>
+                    <!-- Temporarily commented out - Magic-link-specific "Complete Your Account" note
+                    {% if is_temporary_user %}
+                    <div class="flex flex-col gap-2">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-saffron/20 text-dark-purple w-fit">
+                            <i class="fas fa-clock mr-1"></i>
+                            Temporary Account
+                        </span>
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
+                            <h6 class="text-sm font-semibold text-dark-purple mb-2">Complete Your Account</h6>
+                            <ul class="text-xs text-dark-purple/80 space-y-1">
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-persian-green"></i>Enhanced security with OTP verification</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-persian-green"></i>Permanent access across all future bookings</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-persian-green"></i>Save preferences and conversation history</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-persian-green"></i>Access from any device</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-dark-purple/70 text-sm">Permanent Account</p>
+                    {% endif %}
+                    -->
+                </div>
+            </div>
+
+            <!-- Profile Form -->
+            <form id="profile-form" class="space-y-4">
+                <div>
+                    <label for="modal-displayName" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-user text-persian-green mr-2"></i>Your Name
+                    </label>
+                    <input type="text"
+                           id="modal-displayName"
+                           name="displayName"
+                           value="{{ guest_name if guest_name else '' }}"
+                           class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-persian-green focus:border-persian-green text-dark-purple text-sm md:text-base"
+                           placeholder="Enter your display name">
+                    <p class="text-xs text-dark-purple/60 mt-1">This name will be shown in your conversations.</p>
+                </div>
+
+                <!-- Temporarily commented out - Email address field
+                <div>
+                    <label for="modal-email" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-envelope text-persian-green mr-2"></i>Email Address
+                    </label>
+                    <input type="email"
+                           id="modal-email"
+                           name="email"
+                           value=""
+                           class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-persian-green focus:border-persian-green text-dark-purple text-sm md:text-base"
+                           placeholder="Enter your email address">
+                    <p class="text-xs text-dark-purple/60 mt-1">Your email address for account notifications.</p>
+                </div>
+                -->
+
+                <!-- Temporarily commented out - Phone number fields
+                {% if is_temporary_user %}
+                <div>
+                    <label for="modal-phoneNumber" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-phone text-persian-green mr-2"></i>Phone Number for Verification
+                    </label>
+                    <input type="tel"
+                           id="modal-phoneNumber"
+                           name="phoneNumber"
+                           value=""
+                           class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-persian-green focus:border-persian-green text-dark-purple text-sm md:text-base"
+                           placeholder="(555) 123-4567">
+                    <p class="text-xs text-dark-purple/60 mt-1">Select your country and enter your phone number. We'll send an OTP to verify and complete your account setup.</p>
+                </div>
+                {% else %}
+                <div>
+                    <label for="modal-phoneNumber" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-phone text-persian-green mr-2"></i>Phone Number
+                    </label>
+                    <input type="tel"
+                           id="modal-phoneNumber"
+                           name="phoneNumber"
+                           value="{{ phone_number if phone_number else '' }}"
+                           class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg bg-gray-50 text-dark-purple/70 text-sm md:text-base"
+                           placeholder="(555) 123-4567"
+                           readonly>
+                    <p class="text-xs text-dark-purple/60 mt-1">Your verified phone number.</p>
+                </div>
+                {% endif %}
+                -->
+
+                <!-- Temporarily commented out - Language Preference Section
+                <div>
+                    <label for="modal-language" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-language text-persian-green mr-2"></i>Voice Language Preference
+                    </label>
+                    <select id="modal-language"
+                            name="language"
+                            class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-persian-green focus:border-persian-green text-dark-purple text-sm md:text-base">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="en-AU">English (Australia)</option>
+                        <option value="en-IN">English (India)</option>
+                        <option value="es-ES">Spanish (Spain)</option>
+                        <option value="es-US">Spanish (US)</option>
+                        <option value="fr-FR">French (France)</option>
+                        <option value="fr-CA">French (Canada)</option>
+                        <option value="de-DE">German (Germany)</option>
+                        <option value="it-IT">Italian (Italy)</option>
+                        <option value="pt-BR">Portuguese (Brazil)</option>
+                        <option value="ja-JP">Japanese (Japan)</option>
+                        <option value="ko-KR">Korean (South Korea)</option>
+                        <option value="cmn-CN">Mandarin Chinese (China)</option>
+                        <option value="ar-XA">Arabic (Generic)</option>
+                        <option value="hi-IN">Hindi (India)</option>
+                        <option value="ru-RU">Russian (Russia)</option>
+                        <option value="nl-NL">Dutch (Netherlands)</option>
+                        <option value="pl-PL">Polish (Poland)</option>
+                        <option value="th-TH">Thai (Thailand)</option>
+                        <option value="tr-TR">Turkish (Turkey)</option>
+                        <option value="vi-VN">Vietnamese (Vietnam)</option>
+                        <option value="id-ID">Indonesian (Indonesia)</option>
+                        <option value="bn-IN">Bengali (India)</option>
+                        <option value="gu-IN">Gujarati (India)</option>
+                        <option value="kn-IN">Kannada (India)</option>
+                        <option value="mr-IN">Marathi (India)</option>
+                        <option value="ml-IN">Malayalam (India)</option>
+                        <option value="ta-IN">Tamil (India)</option>
+                        <option value="te-IN">Telugu (India)</option>
+                    </select>
+                    <p class="text-xs text-dark-purple/60 mt-1">Language used for voice conversations. Transcripts will be pre-processed to clean up symbols not in this language.</p>
+                </div>
+                -->
+
+                {# Temporarily commented out - Security Settings section for all users
+                {% if not is_temporary_user %}
+                <div class="border-t border-persian-green/20 pt-4">
+                    <h5 class="text-sm font-semibold text-dark-purple mb-3">
+                        <i class="fas fa-key text-persian-green mr-2"></i>Security Settings
+                    </h5>
+
+                    {% if user_has_default_pin %}
+                    <!-- Enhanced security warning for users with default PIN -->
+                    <div class="bg-gradient-to-r from-bittersweet/10 to-orange-50 border border-bittersweet/30 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shield-alt text-bittersweet text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h6 class="text-sm font-semibold text-bittersweet mb-1">🔐 Update Your Security PIN</h6>
+                                <p class="text-xs text-dark-purple/80 mb-3">
+                                    Your PIN is currently set to the default (last 4 digits of your phone number). 
+                                    For enhanced security, please set a personalized PIN that's unique to you.
+                                </p>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="showChangePinForm()"
+                                            class="text-xs bg-bittersweet text-white px-4 py-2 rounded-md hover:bg-bittersweet/90 transition-colors font-medium">
+                                        <i class="fas fa-key mr-1"></i>Update PIN Now
+                                    </button>
+                                    <div class="text-xs text-dark-purple/60">
+                                        <i class="fas fa-clock mr-1"></i>Takes less than 1 minute
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Standard PIN management for users with custom PIN -->
+                    <div class="bg-light-cyan/50 rounded-lg p-3 mb-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-dark-purple">Access PIN</p>
+                                <p class="text-xs text-dark-purple/60">4-digit PIN for secure access</p>
+                            </div>
+                            <button type="button" onclick="showChangePinForm()"
+                                    class="text-xs bg-persian-green text-white px-3 py-1 rounded-md hover:bg-persian-green/90 transition-colors">
+                                Change PIN
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Change PIN Form (Hidden by default) -->
+                    <div id="change-pin-form" class="hidden bg-white border border-persian-green/20 rounded-lg p-4 mb-4">
+                        <h6 class="text-sm font-semibold text-dark-purple mb-3">Change Your PIN</h6>
+                        
+                        <div class="bg-light-cyan/50 border border-persian-green/20 rounded-lg p-3 mb-4">
+                            <p class="text-xs text-dark-purple/70">
+                                <i class="fas fa-info-circle text-persian-green mr-1"></i>
+                                You can set a new 4-digit PIN without entering your current PIN.
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label for="new-pin" class="block text-xs font-medium text-dark-purple mb-1">New PIN</label>
+                                <input type="password" id="new-pin" maxlength="4" pattern="[0-9]{4}"
+                                       class="w-full px-3 py-2 border border-persian-green/20 rounded-md text-center text-lg tracking-widest"
+                                       placeholder="••••">
+                            </div>
+                            <div>
+                                <label for="confirm-pin" class="block text-xs font-medium text-dark-purple mb-1">Confirm New PIN</label>
+                                <input type="password" id="confirm-pin" maxlength="4" pattern="[0-9]{4}"
+                                       class="w-full px-3 py-2 border border-persian-green/20 rounded-md text-center text-lg tracking-widest"
+                                       placeholder="••••">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mt-4">
+                            <button type="button" onclick="hideChangePinForm()"
+                                    class="flex-1 px-3 py-2 text-xs border border-persian-green/20 rounded-md text-dark-purple hover:bg-light-cyan transition-colors">
+                                Cancel
+                            </button>
+                            <button type="button" onclick="changePIN()"
+                                    class="flex-1 px-3 py-2 text-xs bg-persian-green text-white rounded-md hover:bg-persian-green/90 transition-colors">
+                                Update PIN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                #}
+
+                <!-- Temporarily commented out - Account Type indicator
+                {% if not is_temporary_user %}
+                <div>
+                    <label for="modal-role" class="block text-sm font-medium text-dark-purple mb-2">
+                        <i class="fas fa-id-badge text-persian-green mr-2"></i>Account Type
+                    </label>
+                    <input type="text"
+                           id="modal-role"
+                           name="role"
+                           value="Permanent Account"
+                           class="w-full px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg bg-gray-50 text-dark-purple/70 text-sm md:text-base"
+                           readonly>
+                    <p class="text-xs text-dark-purple/60 mt-1">Your account is fully verified.</p>
+                </div>
+                {% endif %}
+                -->
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4">
+                    <button type="button"
+                            id="close-profile-modal-btn"
+                            class="flex-1 px-3 md:px-4 py-2 md:py-3 border border-persian-green/20 rounded-lg text-dark-purple hover:bg-light-cyan transition-colors text-sm md:text-base">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            id="save-profile-btn"
+                            class="flex-1 px-3 md:px-4 py-2 md:py-3 bg-persian-green text-white rounded-lg hover:bg-persian-green/90 transition-colors font-medium text-sm md:text-base">
+                        <!-- Changed to always show "Save Changes" instead of "Complete Account Setup"
+                        {% if is_temporary_user %}
+                        <span id="save-btn-text">Complete Account Setup</span>
+                        {% else %}
+                        <span id="save-btn-text">Save Changes</span>
+                        {% endif %}
+                        -->
+                        <span id="save-btn-text">Save Changes</span>
+                        <i id="save-btn-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedback-modal" class="fixed z-40 hidden" style="right: 12px; bottom: 120px; width: 300px; max-width: 90vw;">
+    <div class="bg-white rounded-2xl shadow-lg border border-persian-green/20 p-3 transform transition-all animate-slide-up relative">
+            <!-- Close button -->
+            <button id="close-feedback-modal" class="absolute top-4 right-4 text-dark-purple/50 hover:text-dark-purple transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <!-- Compact mode: no heading/description -->
+
+            <!-- Question 1: Enjoyment -->
+            <div class="mb-3">
+                <p class="text-dark-purple font-medium mb-1.5 text-center text-sm">Did you enjoy talking to me?</p>
+                <div class="flex justify-center gap-3">
+                    <button class="feedback-emoji-btn" data-question="enjoyment" data-value="0" title="Sad">
+                        <span class="text-2xl">🙁</span>
+                    </button>
+                    <button class="feedback-emoji-btn" data-question="enjoyment" data-value="1" title="Neutral">
+                        <span class="text-2xl">😐</span>
+                    </button>
+                    <button class="feedback-emoji-btn" data-question="enjoyment" data-value="2" title="Happy">
+                        <span class="text-2xl">🙂</span>
+                    </button>
+                    <button class="feedback-emoji-btn" data-question="enjoyment" data-value="3" title="Mind Blowing">
+                        <span class="text-2xl">🤯</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question 2: Accuracy -->
+            <div class="mb-3">
+                <p class="text-dark-purple font-medium mb-1.5 text-center text-sm">Did I answer all your questions accurately?</p>
+                <div class="flex justify-center gap-1.5">
+                    <button class="feedback-star-btn" data-question="accuracy" data-value="1" title="1 star">
+                        <i class="fas fa-star text-xl"></i>
+                    </button>
+                    <button class="feedback-star-btn" data-question="accuracy" data-value="2" title="2 stars">
+                        <i class="fas fa-star text-xl"></i>
+                    </button>
+                    <button class="feedback-star-btn" data-question="accuracy" data-value="3" title="3 stars">
+                        <i class="fas fa-star text-xl"></i>
+                    </button>
+                    <button class="feedback-star-btn" data-question="accuracy" data-value="4" title="4 stars">
+                        <i class="fas fa-star text-xl"></i>
+                    </button>
+                    <button class="feedback-star-btn" data-question="accuracy" data-value="5" title="5 stars">
+                        <i class="fas fa-star text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="submit-feedback-btn" class="w-full bg-persian-green text-white py-2 px-3 rounded-xl font-semibold hover:bg-persian-green/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                <span>Let's chat again</span>
+                <span>👋</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reservations Modal -->
+<div id="reservations-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 md:p-6 transform transition-all max-h-[90vh] overflow-y-auto mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-dark-purple">Your Reservations</h3>
+                <button id="close-reservations-modal" class="text-dark-purple/50 hover:text-dark-purple transition-colors">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Reservations Container -->
+            <div id="modal-reservations-container">
+                <div class="text-center py-8" id="modal-loading-reservations">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-persian-green"></div>
+                    <p class="mt-2 text-dark-purple/70 text-sm">Loading your reservations...</p>
+                </div>
+                <div id="modal-no-reservations" style="display: none;">
+                    <div class="bg-light-cyan rounded-lg p-4 text-center">
+                        <i class="fas fa-calendar-times text-4xl text-dark-purple/30 mb-2"></i>
+                        <p class="text-dark-purple/70 text-sm">You don't have any active reservations.</p>
+                    </div>
+                </div>
+                <div id="modal-reservations-list" style="display: none;" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data fields for JavaScript - USER DATA ONLY (no API keys or credentials) -->
+<div id="template-data" class="hidden"
+     data-user-id="{{ user_id }}"
+     data-property-id="{{ property_id }}"
+     data-websocket-url="{{ request.url_root }}"
+     data-websocket-api-url="{{ request.url_root }}"
+     data-guest-name="{{ guest_name }}"
+     data-guest-name-source="{{ guest_name_source }}"
+     data-phone-number="{{ phone_number }}">
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Load Socket.IO client library -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- Enhanced Phone Input -->
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+
+<!-- Load resource loader first to handle external dependencies -->
+<script src="{{ url_for('static', filename='js/resource-loader.js') }}"></script>
+
+<!-- Configuration script for dashboard -->
+<script type="text/javascript">
+    // Read data from the hidden div
+    const templateData = document.getElementById('template-data');
+
+    // Set user configuration variables (secure credentials loaded via API)
+    window.CURRENT_USER_ID = templateData.dataset.userId || undefined;
+    window.PROPERTY_ID = templateData.dataset.propertyId || undefined;
+    window.WEBSOCKET_URL = templateData.dataset.websocketUrl || "";
+    window.WEBSOCKET_API_URL = templateData.dataset.websocketApiUrl || "";
+    window.GUEST_NAME = templateData.dataset.guestName || "";
+    window.PHONE_NUMBER = templateData.dataset.phoneNumber || "";
+
+    // Note: Sensitive credentials (API keys, Firebase config) are loaded via secure API endpoints
+
+    // Log configuration
+    console.log("Guest dashboard configuration:");
+    console.log("- User ID:", window.CURRENT_USER_ID || "Not defined");
+    console.log("- Property ID:", window.PROPERTY_ID || "Not defined");
+    console.log("- WebSocket URL:", window.WEBSOCKET_URL || "Not defined");
+    console.log("- WebSocket API URL:", window.WEBSOCKET_API_URL || "Not defined");
+    console.log("- Guest Name:", window.GUEST_NAME || "Not available");
+    console.log("- Phone Number:", window.PHONE_NUMBER || "Not available");
+    console.log("- Secure credentials will be loaded via API endpoints");
+
+    // Set data attributes on body element
+    document.body.dataset.websocketUrl = window.WEBSOCKET_URL;
+    document.body.dataset.websocketApiUrl = window.WEBSOCKET_API_URL;
+    document.body.dataset.propertyId = window.PROPERTY_ID || "";
+    document.body.dataset.phoneNumber = window.PHONE_NUMBER || "";
+
+    // Profile modal functionality
+    window.openProfileModal = function() {
+        document.getElementById('profile-modal').classList.remove('hidden');
+        loadUserProfile(); // Load current user data when opening modal
+
+        // Initialize enhanced phone input for temporary users
+        setTimeout(() => {
+            const phoneInput = document.getElementById('modal-phoneNumber');
+            if (phoneInput && !phoneInput.readOnly) {
+                let currentPhone = phoneInput.value;
+                let countryCode = 'US';
+                let localNumber = '';
+
+                // Parse the phone number using the comprehensive parser
+                if (currentPhone && typeof parsePhoneNumber === 'function') {
+                    const parsed = parsePhoneNumber(currentPhone);
+                    countryCode = parsed.countryCode;
+                    localNumber = parsed.localNumber;
+
+                    // Clear the input value so enhanced input can set it properly
+                    phoneInput.value = localNumber;
+                }
+
+                initializePhoneInput('modal-phoneNumber', {
+                    defaultCountry: countryCode,
+                    placeholder: '(555) 123-4567',
+                    autoFormat: true
+                });
+            }
+        }, 100);
+    };
+
+    document.getElementById('profile-button').addEventListener('click', function() {
+        openProfileModal();
+    });
+
+    // Reservations modal functionality
+    document.getElementById('reservations-button').addEventListener('click', function() {
+        document.getElementById('reservations-modal').classList.remove('hidden');
+        loadReservationsModal(); // Load reservations data when opening modal
+    });
+
+    // Magic link upgrade prompt functionality
+    window.dismissUpgradePrompt = function() {
+        const upgradePrompt = document.querySelector('.notification-mobile:has(.bg-gradient-to-r)');
+        if (upgradePrompt) {
+            upgradePrompt.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            upgradePrompt.style.opacity = '0';
+            upgradePrompt.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                upgradePrompt.remove();
+            }, 300);
+        }
+
+        // Store dismissal in session storage to prevent showing again
+        sessionStorage.setItem('upgradePromptDismissed', 'true');
+    };
+
+    // Temporarily commented out - PIN and upgrade functionality (HTML elements are commented out)
+    /*
+    window.showChangePinForm = function() {
+        document.getElementById('change-pin-form').classList.remove('hidden');
+    };
+
+    window.hideChangePinForm = function() {
+        document.getElementById('change-pin-form').classList.add('hidden');
+        // Clear form fields (no current PIN field as it's not required for OTP-verified PIN changes)
+        document.getElementById('new-pin').value = '';
+        document.getElementById('confirm-pin').value = '';
+    };
+    */
+
+    // Upgrade section functions removed - now integrated into main profile form
+
+    // Check if upgrade prompt was previously dismissed
+    if (sessionStorage.getItem('upgradePromptDismissed') === 'true') {
+        const upgradePrompt = document.querySelector('.notification-mobile:has(.bg-gradient-to-r)');
+        if (upgradePrompt) {
+            upgradePrompt.style.display = 'none';
+        }
+    }
+
+    // Temporarily commented out - PIN warning functions (HTML elements are commented out)
+    /*
+    // Function to dismiss PIN warning
+    window.dismissPinWarning = function() {
+        const warningElement = document.getElementById('default-pin-warning');
+        if (warningElement) {
+            warningElement.style.display = 'none';
+            // Store dismissal in session storage so it doesn't reappear during this session
+            sessionStorage.setItem('pinWarningDismissed', 'true');
+        }
+    };
+
+    // Check if PIN warning was previously dismissed
+    if (sessionStorage.getItem('pinWarningDismissed') === 'true') {
+        const pinWarning = document.getElementById('default-pin-warning');
+        if (pinWarning) {
+            pinWarning.style.display = 'none';
+        }
+    }
+    */
+
+    document.getElementById('close-reservations-modal').addEventListener('click', function() {
+        document.getElementById('reservations-modal').classList.add('hidden');
+    });
+
+    document.getElementById('close-profile-modal').addEventListener('click', function() {
+        document.getElementById('profile-modal').classList.add('hidden');
+    });
+
+    // Firebase OTP verification within modal
+    function startFirebaseOTPVerification(phoneNumber, profileData) {
+        const saveBtn = document.getElementById('save-profile-btn');
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveBtnSpinner = document.getElementById('save-btn-spinner');
+        const errorMsg = document.getElementById('profile-update-error');
+        const errorText = document.getElementById('profile-error-text');
+
+        // Update button text
+        saveBtnText.textContent = 'Sending OTP...';
+
+        // Initialize Firebase if not already done
+        if (!window.firebase) {
+            errorText.textContent = 'Firebase not loaded. Please refresh the page and try again.';
+            errorMsg.classList.remove('hidden');
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Complete Account Setup';
+            saveBtnSpinner.classList.add('hidden');
+            return;
+        }
+
+        // Set up reCAPTCHA verifier
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('save-profile-btn', {
+                'size': 'invisible',
+                'callback': function(response) {
+                    console.log('reCAPTCHA solved');
+                }
+            });
+        }
+
+        // Send OTP
+        firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+            .then(function(confirmationResult) {
+                console.log('OTP sent successfully');
+                window.confirmationResult = confirmationResult;
+
+                // Show OTP input in modal
+                showOTPInputInModal(phoneNumber, profileData);
+            })
+            .catch(function(error) {
+                console.error('Error sending OTP:', error);
+                errorText.textContent = 'Failed to send OTP. Please check your phone number and try again.';
+                errorMsg.classList.remove('hidden');
+                saveBtn.disabled = false;
+                saveBtnText.textContent = 'Complete Account Setup';
+                saveBtnSpinner.classList.add('hidden');
+            });
+    }
+
+    document.getElementById('close-profile-modal-btn').addEventListener('click', function() {
+        document.getElementById('profile-modal').classList.add('hidden');
+
+        // Clean up OTP verification section if it exists
+        const otpSection = document.getElementById('otp-verification-section');
+        if (otpSection) {
+            otpSection.remove();
+        }
+    });
+
+    // Show OTP input within the modal
+    function showOTPInputInModal(phoneNumber, profileData) {
+        const modalContent = document.querySelector('#profile-modal .bg-white');
+
+        // Create OTP verification UI
+        const otpHTML = `
+            <div id="otp-verification-section" class="mt-6 p-4 bg-light-cyan/20 rounded-lg border border-persian-green/20">
+                <h4 class="text-lg font-semibold text-dark-purple mb-3">
+                    <i class="fas fa-mobile-alt text-persian-green mr-2"></i>Verify Your Phone Number
+                </h4>
+                <p class="text-sm text-dark-purple/70 mb-4">
+                    We've sent a 6-digit verification code to <strong>${phoneNumber}</strong>
+                </p>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="otp-input" maxlength="6"
+                           class="flex-1 px-3 py-2 border border-persian-green/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-persian-green focus:border-persian-green text-center text-lg font-mono"
+                           placeholder="000000" autocomplete="one-time-code">
+                    <button type="button" id="verify-otp-btn"
+                            class="px-4 py-2 bg-persian-green text-white rounded-lg hover:bg-persian-green/90 transition-colors font-medium">
+                        Verify
+                    </button>
+                </div>
+                <div id="otp-error" class="hidden text-sm text-red-600 mb-2"></div>
+                <p class="text-xs text-dark-purple/60">
+                    Didn't receive the code? <button type="button" id="resend-otp-btn" class="text-persian-green hover:underline">Resend</button>
+                </p>
+            </div>
+        `;
+
+        // Insert OTP section before the action buttons
+        const actionButtons = modalContent.querySelector('.flex.gap-3.pt-4');
+        actionButtons.insertAdjacentHTML('beforebegin', otpHTML);
+
+        // Set up OTP input handlers
+        setupOTPInputHandlers(phoneNumber, profileData);
+
+        // Focus on OTP input
+        document.getElementById('otp-input').focus();
+
+        // Update button text
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveBtnSpinner = document.getElementById('save-btn-spinner');
+        saveBtnText.textContent = 'Enter verification code above';
+        saveBtnSpinner.classList.add('hidden');
+        document.getElementById('save-profile-btn').disabled = true;
+    }
+
+    // Set up OTP input event handlers
+    function setupOTPInputHandlers(phoneNumber, profileData) {
+        const otpInput = document.getElementById('otp-input');
+        const verifyBtn = document.getElementById('verify-otp-btn');
+        const resendBtn = document.getElementById('resend-otp-btn');
+        const otpError = document.getElementById('otp-error');
+
+        // Auto-submit when 6 digits entered
+        otpInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, ''); // Only digits
+            if (this.value.length === 6) {
+                verifyOTP(this.value, profileData);
+            }
+        });
+
+        // Verify button click
+        verifyBtn.addEventListener('click', function() {
+            const otpCode = otpInput.value.trim();
+            if (otpCode.length === 6) {
+                verifyOTP(otpCode, profileData);
+            } else {
+                otpError.textContent = 'Please enter a 6-digit verification code.';
+                otpError.classList.remove('hidden');
+            }
+        });
+
+        // Resend button click
+        resendBtn.addEventListener('click', function() {
+            startFirebaseOTPVerification(phoneNumber, profileData);
+        });
+    }
+
+    // Verify OTP and complete account setup
+    async function verifyOTP(otpCode, profileData) {
+        const verifyBtn = document.getElementById('verify-otp-btn');
+        const otpError = document.getElementById('otp-error');
+        const successMsg = document.getElementById('profile-update-success');
+
+        try {
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+            otpError.classList.add('hidden');
+
+            // Verify OTP with Firebase
+            const result = await window.confirmationResult.confirm(otpCode);
+            const user = result.user;
+            const idToken = await user.getIdToken();
+
+            // Send verification to backend
+            const magicToken = '{{ magic_link_token }}';
+            let verificationUrl;
+
+            if (magicToken && magicToken !== '' && magicToken !== 'None') {
+                verificationUrl = `/magic/${magicToken}/complete-verification`;
+            } else {
+                // For regular users, we might need a different endpoint or handle differently
+                console.warn('No magic link token available for OTP verification');
+                verificationUrl = `/magic/${magicToken}/complete-verification`; // Keep original for now
+            }
+
+            const response = await fetch(verificationUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idToken: idToken,
+                    phoneNumber: profileData.phoneNumber,
+                    uid: user.uid
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Success! Show success message and reload page
+                successMsg.classList.remove('hidden');
+                setTimeout(() => {
+                    window.location.reload(); // Reload to show permanent account status
+                }, 2000);
+            } else {
+                otpError.textContent = data.error || 'Verification failed. Please try again.';
+                otpError.classList.remove('hidden');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify';
+            }
+        } catch (error) {
+            console.error('OTP verification error:', error);
+            otpError.textContent = 'Invalid verification code. Please try again.';
+            otpError.classList.remove('hidden');
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify';
+        }
+    }
+
+    // Temporarily commented out - PIN input formatting (HTML elements are commented out)
+    /*
+    function setupPinInputs() {
+        const pinInputs = ['new-pin', 'confirm-pin'];
+
+        pinInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('input', function(e) {
+                    // Remove any non-digit characters
+                    this.value = this.value.replace(/\D/g, '');
+
+                    // Limit to 4 digits
+                    if (this.value.length > 4) {
+                        this.value = this.value.slice(0, 4);
+                    }
+                });
+
+                input.addEventListener('keypress', function(e) {
+                    // Only allow digits
+                    if (!/\d/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'Enter'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    }
+
+    // Initialize PIN inputs when modal opens
+    document.addEventListener('DOMContentLoaded', function() {
+        setupPinInputs();
+    });
+    */
+
+    // Close modal when clicking outside
+    document.getElementById('profile-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+        }
+    });
+
+    // Load user profile data
+    function loadUserProfile() {
+        const displayNameField = document.getElementById('modal-displayName');
+        const emailField = document.getElementById('modal-email'); // May be null (commented out)
+        const languageField = document.getElementById('modal-language'); // May be null (commented out)
+        const errorMsg = document.getElementById('profile-update-error');
+        const errorText = document.getElementById('profile-error-text');
+
+        // Hide any previous messages
+        document.getElementById('profile-update-success').classList.add('hidden');
+        errorMsg.classList.add('hidden');
+
+        // Show loading state - only for elements that exist
+        if (displayNameField) {
+            displayNameField.value = 'Loading...';
+            displayNameField.disabled = true;
+        }
+        if (emailField) {
+            emailField.value = 'Loading...';
+            emailField.disabled = true;
+        }
+        if (languageField) {
+            languageField.disabled = true;
+        }
+
+        // For guest sessions, use the guest session name instead of user account data
+        const guestNameElement = document.getElementById('guest-name');
+        const guestSessionName = guestNameElement ? guestNameElement.textContent.trim() : '{{ guest_name if guest_name else "Guest" }}';
+        
+        // Set the guest session name in the profile modal
+        if (displayNameField) {
+            displayNameField.value = guestSessionName;
+            displayNameField.disabled = false;
+        }
+        
+        // For guest sessions, we don't need to fetch user account data
+        // Just enable the fields and set default values
+        if (emailField) {
+            emailField.value = '';
+            emailField.disabled = false;
+        }
+        if (languageField) {
+            languageField.value = 'en-US';
+            languageField.disabled = false;
+        }
+        
+        // Skip phone field setup for guest sessions to keep it simple
+        const phoneField = document.getElementById('modal-phoneNumber');
+        if (phoneField) {
+            phoneField.value = '';
+            phoneField.disabled = false;
+        }
+
+        // Update the modal display elements with the guest session name
+        const modalNameElement = document.getElementById('profile-modal-name');
+        const modalAvatarElement = document.getElementById('profile-modal-avatar');
+
+        if (guestSessionName && guestSessionName !== 'Guest') {
+            if (modalNameElement) {
+                modalNameElement.textContent = guestSessionName;
+            }
+            if (modalAvatarElement) {
+                modalAvatarElement.textContent = guestSessionName[0].toUpperCase();
+            }
+        }
+
+        console.log('Loaded guest session name for profile:', guestSessionName);
+        
+        // Skip the backend fetch for guest sessions
+        return;
+        
+        // The following code is kept for reference but won't execute
+        fetch('/api/user/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.user) {
+                // This won't execute for guest sessions
+                if (displayNameField) {
+                    displayNameField.value = data.user.displayName || '';
+                }
+                if (emailField) {
+                    emailField.value = data.user.email || '';
+                }
+                if (languageField) {
+                    languageField.value = data.user.language || 'en-US';
+                }
+
+                // Update phone number field if it exists and user has a phone number
+                const phoneField = document.getElementById('modal-phoneNumber');
+                if (phoneField && data.user.phoneNumber) {
+                    if (phoneField.readOnly) {
+                        // For readonly fields (non-temporary users), format the phone number nicely for display WITH country code
+                        if (typeof parsePhoneNumber === 'function' && data.user.phoneNumber.startsWith('+')) {
+                            const parsed = parsePhoneNumber(data.user.phoneNumber);
+                            
+                            // Format US numbers as +1 (XXX) XXX-XXXX
+                            if (parsed.fullCode === '+1' && parsed.localNumber.length === 10) {
+                                const digits = parsed.localNumber;
+                                const formattedNumber = `+1 (${digits.substring(0,3)}) ${digits.substring(3,6)}-${digits.substring(6)}`;
+                                phoneField.value = formattedNumber;
+                            } else {
+                                // For other countries, show country code + local number
+                                phoneField.value = `${parsed.fullCode} ${parsed.localNumber}`;
+                            }
+                        } else {
+                            phoneField.value = data.user.phoneNumber;
+                        }
+                    } else {
+                        // For editable fields (temporary users), parse and set local number only
+                        // Also update the country dropdown if needed
+                        if (typeof parsePhoneNumber === 'function' && data.user.phoneNumber.startsWith('+')) {
+                            const parsed = parsePhoneNumber(data.user.phoneNumber);
+                            phoneField.value = parsed.localNumber;
+                            
+                            // Update the country dropdown if enhanced phone input is initialized
+                            const container = phoneField.closest('.phone-input-container');
+                            if (container && container.currentCountry && container.currentCountry.iso !== parsed.countryCode) {
+                                // Re-initialize with the correct country
+                                setTimeout(() => {
+                                    if (typeof initializePhoneInput === 'function') {
+                                        initializePhoneInput('modal-phoneNumber', {
+                                            defaultCountry: parsed.countryCode,
+                                            placeholder: '(555) 123-4567',
+                                            autoFormat: true
+                                        });
+                                        phoneField.value = parsed.localNumber;
+                                    }
+                                }, 50);
+                            }
+                        } else {
+                            phoneField.value = data.user.phoneNumber;
+                        }
+                    }
+                }
+
+                // Update the modal display elements with the actual profile data
+                const modalNameElement = document.getElementById('profile-modal-name');
+                const modalAvatarElement = document.getElementById('profile-modal-avatar');
+
+                if (data.user.displayName) {
+                    if (modalNameElement) {
+                        modalNameElement.textContent = data.user.displayName;
+                    }
+                    if (modalAvatarElement) {
+                        modalAvatarElement.textContent = data.user.displayName[0].toUpperCase();
+                    }
+                }
+
+                console.log('Loaded user profile data:', data.user);
+            } else {
+                // Fallback to current values if fetch fails - only for elements that exist
+                if (displayNameField) {
+                    displayNameField.value = window.GUEST_NAME || '';
+                }
+                if (emailField) {
+                    emailField.value = '';
+                }
+                if (languageField) {
+                    languageField.value = 'en-US';
+                }
+                console.warn('Failed to load user profile, using fallback values');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading user profile:', error);
+            // Fallback to current values if fetch fails - only for elements that exist
+            if (displayNameField) {
+                displayNameField.value = window.GUEST_NAME || '';
+            }
+            if (emailField) {
+                emailField.value = '';
+            }
+            if (languageField) {
+                languageField.value = 'en-US';
+            }
+
+            errorText.textContent = 'Could not load profile data. You can still make changes.';
+            errorMsg.classList.remove('hidden');
+        })
+        .finally(() => {
+            // Re-enable fields - only for elements that exist
+            if (displayNameField) {
+                displayNameField.disabled = false;
+            }
+            if (emailField) {
+                emailField.disabled = false;
+            }
+            if (languageField) {
+                languageField.disabled = false;
+            }
+        });
+    }
+
+    // Handle profile form submission
+    document.getElementById('profile-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const saveBtn = document.getElementById('save-profile-btn');
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveBtnSpinner = document.getElementById('save-btn-spinner');
+        const successMsg = document.getElementById('profile-update-success');
+        const errorMsg = document.getElementById('profile-update-error');
+        const errorText = document.getElementById('profile-error-text');
+
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtnText.textContent = 'Saving...';
+        saveBtnSpinner.classList.remove('hidden');
+
+        // Hide previous messages
+        successMsg.classList.add('hidden');
+        errorMsg.classList.add('hidden');
+
+        // Get form data
+        const formData = new FormData(this);
+
+        // Get complete phone number if enhanced input is used
+        let phoneNumber = formData.get('phoneNumber');
+        const phoneInput = document.getElementById('modal-phoneNumber');
+        if (phoneInput && !phoneInput.readOnly) {
+            const completePhoneNumber = getCompletePhoneNumber('modal-phoneNumber');
+            if (completePhoneNumber) {
+                phoneNumber = completePhoneNumber;
+            }
+        }
+
+        const profileData = {
+            displayName: formData.get('displayName'),
+            email: formData.get('email'),
+            phoneNumber: phoneNumber,
+            language: formData.get('language')
+        };
+
+        // Check if this is a temporary user trying to complete account setup
+        const isTemporaryUser = document.querySelector('.bg-saffron\\/20') !== null; // Check for temporary account indicator
+
+        if (isTemporaryUser && profileData.phoneNumber) {
+            // For temporary users with phone number, start OTP verification
+            startPhoneVerificationFlow(profileData);
+            return;
+        }
+
+        // For guest sessions, handle updates locally without modifying host account
+        // Skip backend API call to prevent updating host account data
+        console.log('Guest session detected - updating locally without backend call');
+        
+        // Simulate successful response for guest session updates
+        const data = { success: true };
+        
+        // Process the local updates (same logic as before but without backend call)
+        if (data.success) {
+                // Update the guest name in the UI
+                if (profileData.displayName) {
+                    window.GUEST_NAME = profileData.displayName;
+
+                    // Update all elements that display the guest name
+                    const guestNameElements = document.querySelectorAll('#guest-name, .guest-name-display, [data-guest-name="true"]');
+                    guestNameElements.forEach(element => {
+                        element.textContent = profileData.displayName;
+                    });
+
+                    // Update avatar initials
+                    const avatars = document.querySelectorAll('.bg-saffron');
+                    avatars.forEach(avatar => {
+                        if (avatar.textContent.length === 1) { // Only update single letter avatars
+                            avatar.textContent = profileData.displayName[0].toUpperCase();
+                        }
+                    });
+
+                    // Update the profile modal avatar and name display
+                    const modalAvatars = document.querySelectorAll('#profile-modal .bg-saffron');
+                    modalAvatars.forEach(avatar => {
+                        if (avatar.textContent.length === 1) {
+                            avatar.textContent = profileData.displayName[0].toUpperCase();
+                        }
+                    });
+
+                    // Update the profile modal name display
+                    const modalNameDisplay = document.querySelector('#profile-modal h4');
+                    if (modalNameDisplay) {
+                        modalNameDisplay.textContent = profileData.displayName;
+                    }
+
+                    // Update dashboard state if available - use the proper priority system
+                    if (typeof window.updateGuestName === 'function') {
+                        window.updateGuestName(profileData.displayName, 'user-profile');
+                    } else {
+                        // Fallback: Update centralized state directly
+                        if (window.dashboardState) {
+                            window.dashboardState.guestName = profileData.displayName;
+                            window.dashboardState.guestNameSource = 'user-profile';
+                        }
+                    }
+
+                    // Force update of guest name display function if available
+                    if (typeof window.updateGuestNameDisplay === 'function') {
+                        window.updateGuestNameDisplay();
+                    }
+
+                    // Also refresh the user profile data to ensure everything is in sync
+                    refreshUserProfileData(profileData.displayName);
+                }
+
+                // Update voice call system preferences if they were changed
+                if (profileData.language && typeof window.updateVoiceLanguagePreference === 'function') {
+                    window.updateVoiceLanguagePreference(profileData.language);
+                }
+                
+                // Update voice call system with new guest name if it was changed
+                if (profileData.displayName && typeof window.updateVoiceGuestName === 'function') {
+                    window.updateVoiceGuestName(profileData.displayName);
+                }
+                
+                // Update text chat system with new guest name for Socket.IO session
+                if (profileData.displayName) {
+                    console.log('Profile update: Updating guest name to:', profileData.displayName);
+                    
+                    // Update the global GUEST_NAME variable for text chat
+                    window.GUEST_NAME = profileData.displayName;
+                    console.log('Profile update: Updated window.GUEST_NAME to:', window.GUEST_NAME);
+                    
+                    // Update dashboard state for text chat - ensure it exists first
+                    if (!window.dashboardState) {
+                        window.dashboardState = {};
+                        console.log('Profile update: Created dashboardState object');
+                    }
+                    window.dashboardState.guestName = profileData.displayName;
+                    window.dashboardState.guestNameSource = 'user-profile';
+                    console.log('Profile update: Updated dashboardState.guestName to:', window.dashboardState.guestName);
+                    
+                    // If there's an active Socket.IO connection, update the server session
+                    if (window.socket && window.socket.connected) {
+                        console.log('Profile update: Updating Socket.IO session with new guest name:', profileData.displayName);
+                        window.socket.emit('update_guest_name', {
+                            guest_name: profileData.displayName
+                        });
+                    } else {
+                        console.warn('Profile update: Socket not connected, cannot update server session');
+                    }
+                    
+                    // Also call the text chat update function if available
+                    if (typeof window.updateSocketGuestName === 'function') {
+                        console.log('Profile update: Calling updateSocketGuestName function');
+                        window.updateSocketGuestName(profileData.displayName);
+                    } else {
+                        console.warn('Profile update: updateSocketGuestName function not available');
+                    }
+                    
+                    // Update the updateGuestName function if available (for proper priority handling)
+                    if (typeof window.updateGuestName === 'function') {
+                        console.log('Profile update: Calling updateGuestName function');
+                        window.updateGuestName(profileData.displayName, 'user-profile');
+                    } else {
+                        console.warn('Profile update: updateGuestName function not available');
+                    }
+                    
+                    // Update only intended placeholders; avoid generic selectors that could touch footer or other UI
+                    const guestNameElements = document.querySelectorAll('.guest-name-display, [data-guest-name="true"]');
+                    console.log('Profile update: Found', guestNameElements.length, 'targeted guest name elements to update');
+                    guestNameElements.forEach(element => {
+                        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                            element.value = profileData.displayName;
+                        } else {
+                            element.textContent = profileData.displayName;
+                        }
+                    });
+                    
+                    // Update any template data attributes that might be used by other scripts
+                    const templateDataElement = document.getElementById('template-data');
+                    if (templateDataElement) {
+                        templateDataElement.dataset.guestName = profileData.displayName;
+                        templateDataElement.dataset.guestNameSource = 'user-profile';
+                        console.log('Profile update: Updated template data attributes');
+                    } else {
+                        console.warn('Profile update: template-data element not found');
+                    }
+                    
+                    console.log('Profile update: Guest name update completed successfully');
+                }
+
+                // Show success message
+                successMsg.classList.remove('hidden');
+
+                // Auto-close modal after 2 seconds
+                setTimeout(() => {
+                    document.getElementById('profile-modal').classList.add('hidden');
+                }, 2000);
+            } else {
+                // For guest sessions, this shouldn't happen, but handle gracefully
+                errorText.textContent = 'An error occurred while updating your profile.';
+                errorMsg.classList.remove('hidden');
+            }
+            
+            // Reset button state for guest sessions
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Save Changes';
+            saveBtnSpinner.classList.add('hidden');
+    });
+
+    // Function to refresh user profile data after updates
+    function refreshUserProfileData(newDisplayName) {
+        // Update template data attributes to reflect the new profile data
+        const templateData = document.getElementById('template-data');
+        if (templateData) {
+            templateData.dataset.guestName = newDisplayName;
+            templateData.dataset.guestNameSource = 'user-profile';
+        }
+
+        // Update window variables
+        window.GUEST_NAME = newDisplayName;
+
+        // Update dashboard state if available
+        if (window.dashboardState) {
+            window.dashboardState.guestName = newDisplayName;
+            window.dashboardState.guestNameSource = 'user-profile';
+        }
+
+        console.log('Refreshed user profile data with new display name:', newDisplayName);
+    }
+
+    // Utility functions for showing messages
+    function showError(message) {
+        // Remove any existing messages
+        const existingMessages = document.querySelectorAll('.pin-message');
+        existingMessages.forEach(msg => msg.remove());
+
+        // Create error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'pin-message bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm';
+        errorDiv.textContent = message;
+
+        // Insert before the PIN form
+        const pinForm = document.getElementById('change-pin-form');
+        pinForm.parentNode.insertBefore(errorDiv, pinForm);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 5000);
+    }
+
+    function showSuccess(message) {
+        // Remove any existing messages
+        const existingMessages = document.querySelectorAll('.pin-message');
+        existingMessages.forEach(msg => msg.remove());
+
+        // Create success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'pin-message bg-green-100 border border-green-400 text-green-700 px-3 py-2 rounded mb-3 text-sm';
+        successDiv.textContent = message;
+
+        // Insert before the PIN form
+        const pinForm = document.getElementById('change-pin-form');
+        pinForm.parentNode.insertBefore(successDiv, pinForm);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.remove();
+            }
+        }, 3000);
+    }
+
+    // Temporarily commented out - PIN change functionality (HTML elements are commented out)
+    /*
+    // PIN change functionality
+    window.changePIN = async function() {
+        const newPin = document.getElementById('new-pin').value;
+        const confirmPin = document.getElementById('confirm-pin').value;
+
+        // Validation
+        if (!newPin || newPin.length !== 4) {
+            showError('Please enter a new 4-digit PIN');
+            return;
+        }
+
+        if (!confirmPin || confirmPin.length !== 4) {
+            showError('Please confirm your new 4-digit PIN');
+            return;
+        }
+
+        if (newPin !== confirmPin) {
+            showError('New PIN and confirmation do not match');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = document.querySelector('#change-pin-form button[onclick="changePIN()"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Updating...';
+
+        try {
+            // Determine the correct API endpoint based on user type
+            const magicToken = '{{ magic_link_token }}';
+            let apiUrl;
+            
+            if (magicToken && magicToken !== '' && magicToken !== 'None') {
+                // Use magic link specific PIN change endpoint
+                apiUrl = `/magic/${magicToken}/change-pin`;
+                console.log('Using magic link PIN change endpoint:', apiUrl);
+            } else {
+                // Use general PIN change API for regular authenticated users
+                apiUrl = '/api/change-pin';
+                console.log('Using regular PIN change endpoint:', apiUrl);
+            }
+
+            // Call PIN change API without current PIN
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    newPin: newPin
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showSuccess('PIN changed successfully!');
+                hideChangePinForm();
+                // Clear the form
+                document.getElementById('new-pin').value = '';
+                document.getElementById('confirm-pin').value = '';
+                
+                // Update the UI to show the user no longer has the default PIN
+                updatePinSectionAfterChange();
+                
+                console.log('PIN changed successfully');
+            } else {
+                showError(data.error || 'Failed to change PIN');
+            }
+
+        } catch (error) {
+            console.error('Error changing PIN:', error);
+            showError('An error occurred while changing PIN. Please try again.');
+        } finally {
+            // Restore button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    };
+
+    // Update PIN section after successful PIN change
+    function updatePinSectionAfterChange() {
+        // Find the default PIN warning section
+        const defaultPinWarning = document.querySelector('.bg-gradient-to-r.from-bittersweet\\/10');
+        
+        if (defaultPinWarning) {
+            // Replace the default PIN warning with the standard PIN management section
+            const standardPinSection = document.createElement('div');
+            standardPinSection.className = 'bg-light-cyan/50 rounded-lg p-3 mb-4';
+            standardPinSection.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-dark-purple">Access PIN</p>
+                        <p class="text-xs text-dark-purple/60">4-digit PIN for secure access</p>
+                    </div>
+                    <button type="button" onclick="showChangePinForm()"
+                            class="text-xs bg-persian-green text-white px-3 py-1 rounded-md hover:bg-persian-green/90 transition-colors">
+                        Change PIN
+                    </button>
+                </div>
+            `;
+            
+            // Replace the warning with the standard section
+            defaultPinWarning.parentNode.replaceChild(standardPinSection, defaultPinWarning);
+            
+            console.log('Updated PIN section to show standard management interface');
+        }
+    }
+    */
+
+    // Phone verification functionality
+    window.startPhoneVerification = function() {
+        const phoneNumber = document.getElementById('modal-phoneNumber').value.trim();
+
+        // Basic phone number validation
+        if (!phoneNumber) {
+            alert('Please enter a phone number');
+            return;
+        }
+
+        // Simple phone number format validation
+        const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
+        if (!phoneRegex.test(phoneNumber)) {
+            alert('Please enter a valid phone number');
+            return;
+        }
+
+        // TODO: Implement Firebase OTP verification
+        console.log('Phone verification requested for:', phoneNumber);
+        alert('Phone verification functionality will be implemented in the next update!');
+    };
+
+    // Phone verification flow for account completion
+    function startPhoneVerificationFlow(profileData) {
+        const saveBtn = document.getElementById('save-profile-btn');
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveBtnSpinner = document.getElementById('save-btn-spinner');
+        const errorMsg = document.getElementById('profile-update-error');
+        const errorText = document.getElementById('profile-error-text');
+
+        // Validate phone number
+        if (!profileData.phoneNumber) {
+            errorText.textContent = 'Please enter a phone number to complete your account setup.';
+            errorMsg.classList.remove('hidden');
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Complete Account Setup';
+            saveBtnSpinner.classList.add('hidden');
+            return;
+        }
+
+        // Simple phone number format validation
+        const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
+        if (!phoneRegex.test(profileData.phoneNumber)) {
+            errorText.textContent = 'Please enter a valid phone number.';
+            errorMsg.classList.remove('hidden');
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Complete Account Setup';
+            saveBtnSpinner.classList.add('hidden');
+            return;
+        }
+
+        // Update button text
+        saveBtnText.textContent = 'Setting up verification...';
+
+        // Set up phone verification with backend
+        const magicToken = '{{ magic_link_token }}';
+        let verificationSetupUrl;
+
+        if (magicToken && magicToken !== '' && magicToken !== 'None') {
+            verificationSetupUrl = `/magic/${magicToken}/profile-phone-verification`;
+        } else {
+            // For regular users, we might need a different endpoint
+            console.warn('No magic link token available for profile phone verification');
+            verificationSetupUrl = `/magic/${magicToken}/profile-phone-verification`; // Keep original for now
+        }
+
+        fetch(verificationSetupUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(profileData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Backend setup successful, now start Firebase OTP
+                startFirebaseOTPVerification(data.phoneNumber, profileData);
+            } else {
+                // Show error message
+                errorText.textContent = data.error || 'Failed to set up phone verification.';
+                errorMsg.classList.remove('hidden');
+                saveBtn.disabled = false;
+                saveBtnText.textContent = 'Complete Account Setup';
+                saveBtnSpinner.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error setting up phone verification:', error);
+            errorText.textContent = 'Network error. Please check your connection and try again.';
+            errorMsg.classList.remove('hidden');
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Complete Account Setup';
+            saveBtnSpinner.classList.add('hidden');
+        });
+    };
+
+    // Initialize reservations data (set in separate script tag to avoid linter issues)
+    console.log("Initialized reservations data:", window.reservations);
+
+    // Auto-scroll to bottom function
+    function scrollChatToBottom() {
+        const chatContainer = document.getElementById('chat-messages');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    }
+
+    // Date separator utility functions
+    function formatDateForSeparator(date) {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const messageDate = new Date(date);
+
+        // Reset time to compare just dates
+        today.setHours(0, 0, 0, 0);
+        yesterday.setHours(0, 0, 0, 0);
+        messageDate.setHours(0, 0, 0, 0);
+
+        if (messageDate.getTime() === today.getTime()) {
+            return 'Today';
+        } else if (messageDate.getTime() === yesterday.getTime()) {
+            return 'Yesterday';
+        } else {
+            return messageDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+            });
+        }
+    }
+
+    function createDateSeparator(dateText) {
+        return `
+            <div class="date-separator">
+                <div class="date-separator-text">${dateText}</div>
+            </div>
+        `;
+    }
+
+    function addDateSeparators() {
+        const chatContainer = document.getElementById('chat-messages');
+        if (!chatContainer) return;
+
+        // Remove existing date separators first to prevent duplicates
+        const existingSeparators = chatContainer.querySelectorAll('.date-separator');
+        existingSeparators.forEach(separator => separator.remove());
+
+        const messages = chatContainer.querySelectorAll('.chat-message-wrapper');
+        console.log('addDateSeparators: Found', messages.length, 'messages to process');
+        let lastDate = null;
+
+        messages.forEach((message, index) => {
+            // Get the timestamp from the data attribute
+            const timestampStr = message.getAttribute('data-timestamp');
+            let messageDate;
+
+            if (timestampStr) {
+                messageDate = new Date(timestampStr);
+                console.log(`Message ${index}: Using stored timestamp ${timestampStr} -> ${messageDate.toDateString()}`);
+            } else {
+                // Fallback to current date if no timestamp stored
+                messageDate = new Date();
+                console.log(`Message ${index}: No stored timestamp, using current date ${messageDate.toDateString()}`);
+            }
+
+            const currentDate = messageDate.toDateString();
+
+            if (lastDate !== currentDate) {
+                const dateText = formatDateForSeparator(messageDate);
+                const separator = document.createElement('div');
+                separator.innerHTML = createDateSeparator(dateText);
+                console.log(`Inserting date separator "${dateText}" before message ${index}`);
+
+                // Insert before the current message
+                message.parentNode.insertBefore(separator.firstElementChild, message);
+                lastDate = currentDate;
+            }
+        });
+    }
+
+    // Enhanced function to add date separator when new messages arrive
+    function addDateSeparatorIfNeeded(messageElement) {
+        const chatContainer = document.getElementById('chat-messages');
+        if (!chatContainer || !messageElement) {
+            console.log('addDateSeparatorIfNeeded: Missing container or message element');
+            return;
+        }
+
+        // Check if messageElement has a parent node
+        if (!messageElement.parentNode) {
+            console.log('addDateSeparatorIfNeeded: Message element has no parent node');
+            return;
+        }
+
+        // Get the timestamp from the data attribute
+        const timestampStr = messageElement.getAttribute('data-timestamp');
+        let messageDate;
+
+        if (timestampStr) {
+            messageDate = new Date(timestampStr);
+            console.log('addDateSeparatorIfNeeded: Using stored timestamp', timestampStr, '->', messageDate.toDateString());
+        } else {
+            // Fallback to current date if no timestamp stored
+            messageDate = new Date();
+            console.log('addDateSeparatorIfNeeded: No stored timestamp, using current date');
+        }
+
+        // Check if we need a date separator before this message
+        const previousElement = messageElement.previousElementSibling;
+        let needsSeparator = false;
+
+        // If the previous element is already a date separator for the same date, don't add another
+        if (previousElement && previousElement.classList.contains('date-separator')) {
+            console.log('addDateSeparatorIfNeeded: Previous element is already a date separator, skipping');
+            return;
+        }
+
+        if (previousElement && previousElement.classList.contains('chat-message-wrapper')) {
+            const prevTimestampStr = previousElement.getAttribute('data-timestamp');
+            if (prevTimestampStr) {
+                const prevDate = new Date(prevTimestampStr);
+                console.log('addDateSeparatorIfNeeded: Previous message timestamp', prevTimestampStr, '->', prevDate.toDateString());
+
+                if (messageDate.toDateString() !== prevDate.toDateString()) {
+                    needsSeparator = true;
+                }
+            } else {
+                needsSeparator = true; // Previous message has no timestamp, add separator
+                console.log('addDateSeparatorIfNeeded: Previous message has no timestamp, adding separator');
+            }
+        } else if (!previousElement) {
+            // First message in the chat
+            needsSeparator = true;
+        }
+
+        if (needsSeparator) {
+            const dateText = formatDateForSeparator(messageDate);
+            const separator = document.createElement('div');
+            separator.innerHTML = createDateSeparator(dateText);
+            
+            // Additional safety checks before inserting
+            if (separator.firstElementChild && messageElement.parentNode) {
+                console.log('Inserting date separator:', dateText);
+                messageElement.parentNode.insertBefore(separator.firstElementChild, messageElement);
+            } else {
+                console.log('Cannot insert date separator - missing required elements');
+            }
+        } else {
+            console.log('No date separator needed for message');
+        }
+    }
+
+    // Auto-generate greeting message with compact styling
+    function generateGreeting() {
+        // Use the proper priority system to get the guest name
+        let guestName = 'there';
+
+        // Get name from dashboard state (highest priority)
+        if (window.dashboardState && window.dashboardState.guestName && window.dashboardState.guestName !== 'Guest') {
+            guestName = window.dashboardState.guestName;
+        }
+        // Fallback to window variable
+        else if (window.GUEST_NAME && window.GUEST_NAME !== 'Guest') {
+            guestName = window.GUEST_NAME;
+        }
+
+        const greetingMessage = `Hello ${guestName}! I'm Staycee, your AI concierge. I'm here to help you with any questions about your stay, local recommendations, or anything else you need. How can I assist you today?`;
+
+        // Use the new displayChatMessage function if available
+        if (typeof window.displayChatMessage === 'function') {
+            window.displayChatMessage('assistant', greetingMessage);
+        } else {
+            // Fallback to compact method
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const chatMessages = document.getElementById('chat-messages');
+            const greetingHTML = `
+                <div class="chat-message-wrapper flex gap-3 mb-4" data-timestamp="${now.toISOString()}">
+                    <div class="chat-avatar bg-persian-green rounded-full size-10 flex items-center justify-center text-white font-bold">
+                        S
+                    </div>
+                    <div class="flex flex-1 flex-col gap-2">
+                        <div class="flex flex-col gap-1">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <p class="chat-message-name text-dark-purple text-base font-bold leading-tight">Staycee</p>
+                                <p class="chat-message-time text-persian-green text-sm font-normal leading-normal">${timeString}</p>
+                            </div>
+                            <div class="ai-message rounded-xl p-3">
+                                <p class="chat-message-content text-dark-purple text-base font-normal leading-normal">${greetingMessage}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatMessages.innerHTML = greetingHTML;
+        }
+
+        // Mark that we've shown the greeting and scroll to bottom
+        window.greetingShown = true;
+        setTimeout(scrollChatToBottom, 100);
+    }
+
+    // Initialize conversation history when dashboard state is ready
+    document.addEventListener('propertyIdChanged', function(e) {
+        console.log('Property ID changed, loading conversation history');
+        // Check if loadRecentConversationHistory is available and call it
+        if (typeof window.loadRecentConversationHistory === 'function') {
+            window.loadRecentConversationHistory();
+            // Add date separators and auto-scroll after history loads
+            setTimeout(() => {
+                addDateSeparators();
+                scrollChatToBottom();
+            }, 750);
+        } else {
+            // Fallback to greeting if history loading not available
+            setTimeout(() => {
+                if (!window.conversationHistoryLoaded && !window.greetingShown) {
+                    generateGreeting();
+                }
+            }, 500);
+        }
+        
+        // Update property indicator when property changes
+        setTimeout(updatePropertyIndicator, 300);
+    });
+
+    // Generate greeting on page load if no conversation history is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit to allow conversation history to be loaded first
+        setTimeout(() => {
+            if (!window.conversationHistoryLoaded && !window.greetingShown) {
+                generateGreeting();
+            } else {
+                // If conversation history was loaded, add date separators and scroll to bottom
+                addDateSeparators();
+                scrollChatToBottom();
+            }
+            
+            // Update property indicator after page loads
+            setTimeout(updatePropertyIndicator, 1000);
+        }, 1000);
+    });
+
+    // Load reservations into modal
+    function loadReservationsModal() {
+        const modalContainer = document.getElementById('modal-reservations-container');
+        const loadingElement = document.getElementById('modal-loading-reservations');
+        const noReservationsElement = document.getElementById('modal-no-reservations');
+        const reservationsListElement = document.getElementById('modal-reservations-list');
+
+        // Show loading state
+        loadingElement.style.display = 'block';
+        noReservationsElement.style.display = 'none';
+        reservationsListElement.style.display = 'none';
+
+        // Check if we have reservations data available
+        if (window.reservations && window.reservations.length > 0) {
+            // Use existing reservations data
+            console.log('Modal: Using window.reservations:', window.reservations.length, 'reservations');
+            displayReservationsInModal(window.reservations);
+            // Update property indicator
+            setTimeout(updatePropertyIndicator, 200);
+            return;
+        }
+
+        // Check if dashboardState has reservations
+        if (window.dashboardState && window.dashboardState.reservations && window.dashboardState.reservations.length > 0) {
+            console.log('Modal: Using dashboardState.reservations:', window.dashboardState.reservations.length, 'reservations');
+            displayReservationsInModal(window.dashboardState.reservations);
+            // Update property indicator
+            setTimeout(updatePropertyIndicator, 200);
+            return;
+        }
+
+        // Try to fetch reservations directly
+        const userId = window.CURRENT_USER_ID;
+        const phoneNumber = window.PHONE_NUMBER;
+
+        if (!userId && !phoneNumber) {
+            showNoReservationsInModal();
+            return;
+        }
+
+        // Call the API to get reservations
+        let apiUrl;
+        if (userId) {
+            apiUrl = `/api/reservations/${userId}`;
+        } else {
+            apiUrl = `/api/reservations?phone=${encodeURIComponent(phoneNumber)}`;
+        }
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Modal: Direct API call response:', data);
+                if (data.success && data.reservations && Array.isArray(data.reservations) && data.reservations.length > 0) {
+                    console.log('Modal: Direct API call found', data.reservations.length, 'reservations');
+                    // Store the reservations for future use
+                    window.reservations = data.reservations;
+                    displayReservationsInModal(data.reservations);
+                    // Update property indicator
+                    setTimeout(updatePropertyIndicator, 200);
+                } else {
+                    console.log('Modal: Direct API call found no reservations or error');
+                    showNoReservationsInModal();
+                    // Hide property indicator if no reservations
+                    setTimeout(() => {
+                        const propertyIndicator = document.getElementById('property-indicator');
+                        if (propertyIndicator) propertyIndicator.classList.add('hidden');
+                    }, 100);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading reservations for modal:', error);
+                showNoReservationsInModal();
+            });
+    }
+
+    function displayReservationsInModal(reservations) {
+        const loadingElement = document.getElementById('modal-loading-reservations');
+        const noReservationsElement = document.getElementById('modal-no-reservations');
+        const reservationsListElement = document.getElementById('modal-reservations-list');
+
+        loadingElement.style.display = 'none';
+        noReservationsElement.style.display = 'none';
+        reservationsListElement.style.display = 'block';
+
+        // Clear existing content
+        reservationsListElement.innerHTML = '';
+
+        // Generate reservation cards
+        reservations.forEach((reservation, index) => {
+            const cardHTML = generateModalReservationCard(reservation, index);
+            reservationsListElement.innerHTML += cardHTML;
+            
+            // Fetch property details for each reservation (same as original sidebar)
+            const propertyId = reservation.property_id || reservation.propertyId || reservation.PropertyId;
+            if (propertyId) {
+                fetchPropertyDetailsForModal(propertyId);
+            }
+        });
+
+        // Add event listeners to select buttons after DOM is updated
+        setTimeout(() => {
+            const selectButtons = document.querySelectorAll('#modal-reservations-list .select-property-btn');
+            selectButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const index = parseInt(this.dataset.index);
+                    const reservation = reservations[index];
+                    
+                    console.log('Modal: Selecting property at index:', index, 'reservation:', reservation);
+                    
+                    // Close the modal first
+                    document.getElementById('reservations-modal').classList.add('hidden');
+                    
+                    // Use the new wrapper function
+                    if (typeof window.modalSelectProperty === 'function') {
+                        window.modalSelectProperty(index)
+                            .then(() => {
+                                console.log('Property selection successful');
+                                // Update property indicator after selection
+                                setTimeout(updatePropertyIndicator, 500);
+                            })
+                            .catch(error => {
+                                console.error('Property selection failed:', error);
+                                // Fallback: reload the page
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            });
+                    } else {
+                        console.error('modalSelectProperty function not available');
+                        // Fallback: reload the page
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                });
+            });
+            
+            // Update property indicator after reservations are displayed
+            updatePropertyIndicator();
+        }, 100);
+    }
+
+    function generateModalReservationCard(reservation, index) {
+        // Normalize the reservation data to handle different field formats
+        const propertyName = reservation.property_name || reservation.propertyName || reservation.name || 'Loading...';
+        const checkInDate = reservation.check_in_date || reservation.checkInDate || reservation.startDate || '';
+        const checkOutDate = reservation.check_out_date || reservation.checkOutDate || reservation.endDate || '';
+        const numGuests = reservation.num_guests || reservation.numGuests || reservation.guests || reservation.numberOfGuests || 'N/A';
+        const propertyId = reservation.property_id || reservation.propertyId || reservation.PropertyId || '';
+        const reservationId = reservation.id || reservation.reservation_id || index;
+
+        // Format dates properly (fixing the 1-day off issue)
+        let formattedCheckIn = checkInDate;
+        let formattedCheckOut = checkOutDate;
+        
+        try {
+            if (checkInDate && checkInDate !== '') {
+                // Create date object and handle timezone properly
+                const checkIn = new Date(checkInDate + 'T00:00:00');
+                formattedCheckIn = checkIn.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+            if (checkOutDate && checkOutDate !== '') {
+                // Create date object and handle timezone properly
+                const checkOut = new Date(checkOutDate + 'T00:00:00');
+                formattedCheckOut = checkOut.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+        } catch (e) {
+            console.warn('Error formatting dates for reservation:', e);
+            // Keep original values if parsing fails
+        }
+
+        // Determine reservation status using same logic as original
+        let statusClass = '';
+        let statusText = 'Upcoming';
+        let isActive = false;
+        
+        try {
+            const now = new Date();
+            const checkIn = new Date(checkInDate + 'T00:00:00');
+            const checkOut = new Date(checkOutDate + 'T00:00:00');
+            
+            if (now >= checkIn && now <= checkOut) {
+                statusClass = 'bg-green-100 text-green-800';
+                statusText = 'Active';
+                isActive = true;
+            } else if (now > checkOut) {
+                statusClass = 'bg-gray-100 text-gray-600';
+                statusText = 'Past';
+            } else {
+                statusClass = 'bg-persian-green/10 text-persian-green';
+                statusText = 'Upcoming';
+            }
+        } catch (e) {
+            // Keep default status if date parsing fails
+        }
+
+        // Generate additional contacts HTML
+        let contactsHtml = '';
+        if (reservation.additionalContacts && reservation.additionalContacts.length > 0) {
+            contactsHtml = `
+                <div class="mt-4 pt-3 border-t border-persian-green/20">
+                    <h6 class="text-sm font-semibold text-dark-purple mb-2">
+                        <i class="fas fa-users text-persian-green mr-2"></i>Additional Contacts
+                    </h6>
+                    <div class="space-y-1">
+            `;
+            reservation.additionalContacts.forEach(contact => {
+                const contactName = contact.name || 'Guest';
+                const contactPhone = contact.phone || 'No phone';
+                contactsHtml += `
+                    <div class="text-sm text-dark-purple/80">
+                        <i class="fas fa-user text-persian-green mr-2"></i>
+                        ${contactName}: ${contactPhone}
+                    </div>
+                `;
+            });
+            contactsHtml += '</div></div>';
+        }
+
+        // Create unique IDs for property info elements (using reservation ID to avoid duplicates)
+        const titleId = `modal-property-title-${reservationId}`;
+        const addressId = `modal-property-address-${reservationId}`;
+
+        // Get current confirmed property to determine if this should be active
+        const confirmedPropertyId = window.dashboardState?.confirmedPropertyId || window.PROPERTY_ID;
+        const shouldBeActive = (propertyId === confirmedPropertyId) || isActive;
+
+        // Create the card with Profile modal styling
+        const cardBorderClass = shouldBeActive ? 'border-persian-green bg-persian-green/5' : 'border-persian-green/20';
+        
+        return `
+            <div class="bg-light-cyan rounded-lg p-4 border ${cardBorderClass} reservation-card" 
+                 data-property-id="${propertyId}" 
+                 data-index="${index}" 
+                 data-reservation-id="${reservationId}">
+                
+                <!-- Property Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex-1">
+                        <h4 id="${titleId}" class="font-semibold text-dark-purple text-lg property-name">${propertyName}</h4>
+                        <p id="${addressId}" class="text-dark-purple/70 text-sm property-address">Address loading...</p>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                        ${statusText}
+                    </span>
+                </div>
+
+                <!-- Reservation Details -->
+                <div class="space-y-3">
+                    <!-- Check-in/Check-out -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-sm font-medium text-dark-purple mb-1">
+                                <i class="fas fa-calendar-plus text-persian-green mr-2"></i>Check-in
+                            </div>
+                            <div class="text-sm text-dark-purple/80">${formattedCheckIn || 'Not specified'}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-dark-purple mb-1">
+                                <i class="fas fa-calendar-minus text-persian-green mr-2"></i>Check-out
+                            </div>
+                            <div class="text-sm text-dark-purple/80">${formattedCheckOut || 'Not specified'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                ${contactsHtml}
+                
+                <!-- Select Button -->
+                ${!shouldBeActive ? `
+                <div class="mt-4 pt-3 border-t border-persian-green/20">
+                    <button class="w-full bg-persian-green text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-persian-green/90 transition-colors select-property-btn" 
+                            data-index="${index}">
+                        Select This Property
+                    </button>
+                </div>
+                ` : shouldBeActive ? `
+                <div class="mt-4 pt-3 border-t border-persian-green/20">
+                    <div class="text-center text-sm text-persian-green font-medium">
+                        <i class="fas fa-check-circle mr-2"></i>Currently Selected
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function showNoReservationsInModal() {
+        const loadingElement = document.getElementById('modal-loading-reservations');
+        const noReservationsElement = document.getElementById('modal-no-reservations');
+        const reservationsListElement = document.getElementById('modal-reservations-list');
+
+        loadingElement.style.display = 'none';
+        noReservationsElement.style.display = 'block';
+        reservationsListElement.style.display = 'none';
+    }
+
+    // Function to fetch property details for modal cards (same logic as original)
+    async function fetchPropertyDetailsForModal(propertyId) {
+        try {
+            const response = await fetch(`/api/property/${propertyId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.property) {
+                    updateModalPropertyCardInfo(propertyId, data.property.name, data.property.address);
+                }
+            }
+        } catch (error) {
+            console.warn(`Error fetching property details for modal card ${propertyId}:`, error);
+        }
+    }
+
+    // Function to update property info in modal cards
+    function updateModalPropertyCardInfo(propertyId, propertyName, propertyAddress) {
+        // Find all reservation cards with this property ID and update their titles/addresses
+        const reservationCards = document.querySelectorAll(`[data-property-id="${propertyId}"]`);
+        
+        reservationCards.forEach(card => {
+            const reservationId = card.dataset.reservationId;
+            if (reservationId) {
+                const titleElement = document.getElementById(`modal-property-title-${reservationId}`);
+                const addressElement = document.getElementById(`modal-property-address-${reservationId}`);
+
+                if (titleElement && propertyName) {
+                    titleElement.textContent = propertyName;
+                }
+
+                if (addressElement && propertyAddress) {
+                    addressElement.textContent = propertyAddress;
+                }
+            }
+        });
+    }
+
+    // Add global functions for other scripts to use
+    window.scrollChatToBottom = scrollChatToBottom;
+    window.addDateSeparators = addDateSeparators;
+    window.addDateSeparatorIfNeeded = addDateSeparatorIfNeeded;
+
+    // Debug function to test date separators
+    window.testDateSeparators = function() {
+        console.log('Testing date separators...');
+        const chatMessages = document.getElementById('chat-messages');
+        const wrappers = chatMessages.querySelectorAll('.chat-message-wrapper');
+        console.log('Found', wrappers.length, 'message wrappers');
+        wrappers.forEach((wrapper, index) => {
+            const timeEl = wrapper.querySelector('.chat-message-time');
+            console.log(`Message ${index}:`, timeEl ? timeEl.textContent : 'No time element');
+        });
+        addDateSeparators();
+    };
+
+    // Auto-scroll when new content is added to chat
+    const chatObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Check if any added nodes are chat messages
+                for (let node of mutation.addedNodes) {
+                    if (node.nodeType === 1 && (
+                        node.classList.contains('chat-message-wrapper') ||
+                        node.querySelector && node.querySelector('.chat-message-wrapper')
+                    )) {
+                        // Note: Date separator is handled in displayChatMessage, so we don't need to add it here
+                        setTimeout(scrollChatToBottom, 100);
+                        break;
+                    }
+                }
+            }
+        });
+    });
+
+    // Start observing chat messages container
+    const chatContainer = document.getElementById('chat-messages');
+    if (chatContainer) {
+        chatObserver.observe(chatContainer, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    // Add global wrapper for property selection to work with modal
+    window.modalSelectProperty = function(index) {
+        console.log('Modal: Attempting to select property at index:', index);
+        
+        // Try to call the existing selectProperty function if available
+        if (typeof window.selectProperty === 'function') {
+            console.log('Modal: Using global selectProperty function for dynamic switching');
+            return window.selectProperty(index);
+        }
+        
+        // Try to import and call the selectProperty function from the reservations module
+        if (typeof window.loadReservationsModule === 'function') {
+            console.log('Modal: Importing selectProperty from reservations module');
+            return window.loadReservationsModule().then(module => {
+                if (module.selectProperty) {
+                    return module.selectProperty(index);
+                } else {
+                    throw new Error('selectProperty not found in module');
+                }
+            });
+        }
+        
+        // Fallback: use the reservation data and switchProperty if available
+        const reservations = window.reservations || window.dashboardState?.reservations || [];
+        if (reservations[index]) {
+            const reservation = reservations[index];
+            const propertyId = reservation.property_id || reservation.propertyId || reservation.PropertyId;
+            
+            if (typeof window.switchProperty === 'function' && propertyId) {
+                console.log('Modal: Using fallback switchProperty function with propertyId:', propertyId, '(THIS MIGHT CAUSE PAGE RELOAD)');
+                return window.switchProperty(propertyId, reservation);
+            }
+        }
+        
+        console.error('Modal: No property selection method available - this will likely cause issues');
+        return Promise.reject(new Error('No property selection method available'));
+    };
+
+    // Property indicator management
+    function updatePropertyIndicator() {
+        const propertyIndicator = document.getElementById('property-indicator');
+        const currentPropertyName = document.getElementById('current-property-name');
+        const chatHeader = document.getElementById('chat-header');
+        
+        if (!propertyIndicator || !currentPropertyName || !chatHeader) return;
+        
+        // Get reservations count
+        const reservations = window.reservations || window.dashboardState?.reservations || [];
+        const hasMultipleReservations = reservations.length > 1;
+        
+        if (!hasMultipleReservations) {
+            // Hide indicator if only one or no reservations
+            propertyIndicator.classList.add('hidden');
+            chatHeader.classList.remove('chat-header-with-indicator');
+            return;
+        }
+        
+        // Get current property information
+        const currentPropertyId = window.dashboardState?.propertyId || window.confirmedPropertyId || window.PROPERTY_ID;
+        let currentProperty = null;
+        
+        // Find the current property in reservations
+        if (currentPropertyId && reservations.length > 0) {
+            currentProperty = reservations.find(reservation => {
+                const propertyId = reservation.property_id || reservation.propertyId || reservation.PropertyId;
+                return propertyId === currentPropertyId;
+            });
+        }
+        
+        if (currentProperty) {
+            const propertyName = currentProperty.property_name || currentProperty.propertyName || currentProperty.name;
+            if (propertyName && propertyName !== 'Loading...' && propertyName !== 'Unknown Property') {
+                currentPropertyName.textContent = propertyName;
+                propertyIndicator.classList.remove('hidden');
+                // Add conditional layout class when indicator is visible
+                chatHeader.classList.add('chat-header-with-indicator');
+            } else {
+                // Try to fetch property name from API if not available
+                fetchPropertyNameForIndicator(currentPropertyId);
+            }
+        } else {
+            // Hide indicator if no current property is selected
+            propertyIndicator.classList.add('hidden');
+            chatHeader.classList.remove('chat-header-with-indicator');
+        }
+    }
+    
+    // Fetch property name for the indicator
+    async function fetchPropertyNameForIndicator(propertyId) {
+        if (!propertyId) return;
+        
+        try {
+            const response = await fetch(`/api/property/${propertyId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.property && data.property.name) {
+                    const currentPropertyName = document.getElementById('current-property-name');
+                    const propertyIndicator = document.getElementById('property-indicator');
+                    const chatHeader = document.getElementById('chat-header');
+                    
+                    if (currentPropertyName && propertyIndicator && chatHeader) {
+                        currentPropertyName.textContent = data.property.name;
+                        propertyIndicator.classList.remove('hidden');
+                        // Add conditional layout class when indicator becomes visible
+                        chatHeader.classList.add('chat-header-with-indicator');
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn('Error fetching property name for indicator:', error);
+        }
+    }
+    
+    // Update property indicator when reservations are loaded
+    function onReservationsLoaded() {
+        console.log('Reservations loaded, updating property indicator');
+        setTimeout(updatePropertyIndicator, 500); // Give time for property data to load
+    }
+    
+    // Update property indicator when property changes
+    function onPropertyChanged() {
+        console.log('Property changed, updating property indicator');
+        setTimeout(updatePropertyIndicator, 100);
+    }
+    
+    // Listen for property changes
+    document.addEventListener('propertyIdChanged', onPropertyChanged);
+    
+    // Expose functions globally
+    window.updatePropertyIndicator = updatePropertyIndicator;
+    window.onReservationsLoaded = onReservationsLoaded;
+    window.onPropertyChanged = onPropertyChanged;
+
+    // Add global functions for other scripts to use
+</script>
+
+<!-- Load guest dashboard scripts -->
+<script src="{{ url_for('static', filename='js/voice_call_diagnostics.js') }}"></script>
+<script type="module" defer src="{{ url_for('static', filename='js/guest_dashboard_feedback.js') }}"></script>
+<script type="module" defer src="{{ url_for('static', filename='js/guest_dashboard_main.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Amplify Guestrix Dev Environment",
+  "Resources": {
+      "DeploymentBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+              "BucketName": "amplify-guestrix-dev-33a26-deployment",
+              "VersioningConfiguration": {
+                  "Status": "Enabled"
+              }
+          }
+      },
+      "DeploymentBucketPolicy": {
+          "Type": "AWS::S3::BucketPolicy",
+          "Properties": {
+              "Bucket": {
+                  "Ref": "DeploymentBucket"
+              },
+              "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                      {
+                          "Effect": "Allow",
+                          "Principal": {
+                              "AWS": "arn:aws:iam::817634563684:role/cdk-hnb659fds-deploy-role-817634563684-us-east-2"
+                          },
+                          "Action": [
+                              "s3:GetObject",
+                              "s3:PutObject",
+                              "s3:DeleteObject",
+                              "s3:ListBucket"
+                          ],
+                          "Resource": [
+                              "arn:aws:s3:::amplify-guestrix-dev-33a26-deployment/*",
+                              "arn:aws:s3:::amplify-guestrix-dev-33a26-deployment"
+                          ]
+                      }
+                  ]
+              }
+          }
+      }
+  }
+}

@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% block title %}Account Not Found - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Choice card styles */
+    .choice-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 16px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .choice-card:hover {
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .choice-card.selected {
+        border-color: var(--persian-green);
+        background-color: #f0fdfa;
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    .choice-icon {
+        font-size: 2.5rem;
+        color: var(--persian-green);
+        margin-bottom: 1rem;
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-primary-custom:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-secondary-custom {
+        background-color: #f3f4f6;
+        color: var(--dark-purple);
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #e5e7eb;
+        color: var(--dark-purple);
+        text-decoration: none;
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-lg">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Account not found</p>
+        </div>
+
+        <!-- Account Type Selection Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Account Options</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <!-- Success/Error messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {# Filter out host-specific messages - they're not relevant for guests #}
+                            {% set is_host_message = (
+                                'knowledge items generated successfully' in message or
+                                'knowledge items created' in message or
+                                'File uploaded' in message or
+                                'Text added' in message or
+                                'duplicates skipped' in message or
+                                'failed to create knowledge items' in message
+                            ) %}
+                            {% if not (message == 'You have been logged out.' and category == 'info') and not is_host_message %}
+                                <div class="mb-4 p-3 {{ 'bg-red-50 border-red-200' if category == 'error' else 'bg-blue-50 border-blue-200' }} border rounded-lg">
+                                    <p class="{{ 'text-red-700' if category == 'error' else 'text-blue-700' }} text-sm">{{ message }}</p>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="text-center mb-6">
+                    {% if phone_number %}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-center mb-2">
+                                <svg class="w-6 h-6 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-yellow-800">No Account Found</h3>
+                            </div>
+                            <p class="text-yellow-700 mb-2">We couldn't find an account for <strong>{{ phone_number }}</strong></p>
+                            <p class="text-yellow-600 text-sm">You can create a host account to manage properties, or go back to try a different phone number.</p>
+                        </div>
+                    {% else %}
+                        <p class="text-dark-purple">Select the type of account you'd like to create:</p>
+                    {% endif %}
+                </div>
+
+                <form method="POST" action="{{ form_action or (url_for('magic.create_account_from_magic_link', token=token) if is_magic_link else url_for('auth.signup_choice')) }}">
+                    {% if phone_number %}
+                        <input type="hidden" name="phone_number" value="{{ phone_number }}">
+                    {% endif %}
+                    {% if token %}
+                        <input type="hidden" name="token" value="{{ token }}">
+                    {% endif %}
+                    
+                    <div class="choice-card" onclick="selectAccountType('host')">
+                        <input type="radio" name="account_type" value="host" id="host" class="hidden">
+                        <div class="text-center">
+                            <div class="choice-icon">
+                                🏠
+                            </div>
+                            <h5 class="text-lg font-bold text-dark-purple mb-2">Create Host Account</h5>
+                            <p class="form-text-custom mb-0">
+                                Manage properties and create guest experiences with Guestrix
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mt-6">
+                        <button type="submit" class="btn-primary-custom w-full" id="create-account-btn" disabled>
+                            Create Host Account
+                        </button>
+
+                        {% if back_url %}
+                            <a href="{{ back_url }}" class="btn-secondary-custom w-full">
+                                ← {{ back_text or 'Back' }}
+                            </a>
+                        {% elif is_magic_link %}
+                            <a href="{{ url_for('magic.magic_link_access', token=token) }}" class="btn-secondary-custom w-full">
+                                ← Back to PIN Screen
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('auth.phone_login') }}" class="btn-secondary-custom w-full">
+                                ← Back to Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- Guest Account Information -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 mb-1">Looking for guest access?</h4>
+                            <p class="text-blue-700 text-sm">
+                                If you're staying at a property, your host should provide you with a magic link.
+                                Guest accounts are created automatically when you use the magic link.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <div class="form-text-custom">Need help? Try a different phone number or contact support.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectAccountType(type) {
+    // Clear previous selections
+    document.querySelectorAll('.choice-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+
+    // Select the clicked option
+    const selectedCard = document.querySelector(`#${type}`).closest('.choice-card');
+    selectedCard.classList.add('selected');
+
+    // Check the radio button
+    document.getElementById(type).checked = true;
+
+    // Enable the create account button
+    document.getElementById('create-account-btn').disabled = false;
+}
+
+// Add click handlers for better UX
+document.querySelectorAll('.choice-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        selectAccountType(radio.value);
+    });
+});
+
+// Auto-select host option since it's the only option
+document.addEventListener('DOMContentLoaded', function() {
+    selectAccountType('host');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-guestrix-dev-5b842-authRole",
+      "UnauthRoleArn": "arn:aws:iam::817634563684:role/amplify-guestrix-dev-5b842-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::817634563684:role/amplify-guestrix-dev-5b842-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-guestrix-dev-5b842-deployment",
+      "UnauthRoleName": "amplify-guestrix-dev-5b842-unauthRole",
+      "StackName": "amplify-guestrix-dev-5b842",
+      "StackId": "arn:aws:cloudformation:us-east-2:817634563684:stack/amplify-guestrix-dev-5b842/977d5480-26fd-11f0-8187-02ab69705203",
+      "AmplifyAppId": "d1u169ifu6z79x"
+    },
+    "categories": {
+      "function": {
+        "waitlistapi": {
+          "deploymentBucketName": "amplify-guestrix-dev-5b842-deployment",
+          "s3Key": "amplify-builds/waitlistapi-656a31545746795a6831-build.zip"
+        }
+      },
+      "storage": {
+        "WaitList": {}
+      },
+      "api": {
+        "waitlistapi": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Access Error - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Warning message styles */
+    .warning-message {
+        background-color: var(--saffron);
+        color: var(--dark-purple);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Access Error</p>
+        </div>
+
+        <!-- Error Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-bittersweet text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Access Error</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 text-center">
+                <p class="mb-6 text-dark-purple">{{ error_message }}</p>
+
+                <div class="warning-message">
+                    <strong>Need Help?</strong><br>
+                    Contact your host directly for assistance with accessing your reservation information.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

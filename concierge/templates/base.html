@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Guestrix{% endblock %}</title>
+    
+    <!-- Favicon Links -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='images/android-chrome-512x512.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body data-websocket-url="{{ websocket_url | default('') }}">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Guestrix</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item" id="dashboard-link" style="display: none;">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item" id="profile-link" style="display: none;">
+                        <a class="nav-link" href="/profile">My Profile</a>
+                    </li>
+                    <li class="nav-item" id="logout-button" style="display: none;">
+                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}
+            <!-- Container for dynamic content, e.g., the auth UI -->
+            <div id="auth-container"></div>
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO Client Library -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <!-- Firebase SDK v9 compat libraries - Always loaded -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Initialize Firebase - Configuration loaded securely via API -->
+    <script>
+      // Firebase will be initialized asynchronously after loading config from secure endpoint
+      window.firebaseReady = false;
+      window.firebaseInitPromise = null;
+
+      // Function to initialize Firebase securely
+      async function initializeFirebaseSecurely() {
+        if (window.firebaseReady) {
+          return firebase.app(); // Return existing instance
+        }
+
+        if (window.firebaseInitPromise) {
+          return window.firebaseInitPromise; // Return existing promise
+        }
+
+        window.firebaseInitPromise = (async () => {
+          try {
+            console.log("Loading Firebase configuration from secure endpoint...");
+            
+            const response = await fetch('/api/firebase-config', {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json'
+              },
+              credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to load Firebase config: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (!data.success || !data.config) {
+              throw new Error("Invalid Firebase configuration response");
+            }
+
+            const firebaseConfigData = data.config;
+            console.log("Firebase configuration loaded securely");
+
+            // Initialize Firebase with secure config
+            const app = firebase.initializeApp(firebaseConfigData);
+            window.firebaseReady = true;
+            console.log("Firebase initialized securely");
+            
+            return app;
+          } catch (error) {
+            console.error("Error initializing Firebase securely:", error);
+            // For development/fallback, you might want to handle this differently
+            throw error;
+          }
+        })();
+
+        return window.firebaseInitPromise;
+      }
+
+      // Make the function globally available
+      window.initializeFirebaseSecurely = initializeFirebaseSecurely;
+    </script>
+
+    <!-- reCAPTCHA script needed by auth.js -->
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+
+    <!-- Date utilities for consistent date handling -->
+    <script src="{{ url_for('static', filename='js/date_utils.js') }}"></script>
+
+    <!-- Load auth.js after Firebase and reCAPTCHA are initialized -->
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+    {% block scripts %}
+    <!-- Additional page-specific scripts can be added here -->
+    {% endblock %}
+</body>
+</html>

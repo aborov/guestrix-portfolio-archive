@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Email Sign In - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Form input styles */
+    .form-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+        color: var(--dark-purple);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-primary-custom:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-secondary-custom {
+        background-color: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Success icon animation */
+    .success-icon {
+        color: var(--persian-green);
+        animation: checkmark 0.6s ease-in-out;
+    }
+
+    @keyframes checkmark {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Verifying your email sign-in link...</p>
+        </div>
+
+        <!-- Email Link Verification Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Email Sign-In</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+
+                <!-- Loading state -->
+                <div id="loading-state" class="text-center py-8">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-persian-green mx-auto mb-4"></div>
+                    <h3 class="text-lg font-semibold text-dark-purple mb-2">Verifying your email link</h3>
+                    <p class="text-dark-purple/70">Please wait while we authenticate your sign-in...</p>
+                </div>
+
+                <!-- Success state -->
+                <div id="success-state" class="hidden text-center py-8">
+                    <div class="mb-6">
+                        <i class="bi bi-check-circle-fill success-icon" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-dark-purple text-xl font-bold mb-3">Email Verification Successful!</h3>
+                    <p class="text-dark-purple/70">You will be redirected to the dashboard shortly...</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="error-state" class="hidden text-center py-8">
+                    <div class="mb-6">
+                        <i class="bi bi-exclamation-triangle-fill text-bittersweet" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-dark-purple text-xl font-bold mb-3">Sign-in Error</h3>
+                    <p id="error-message" class="text-dark-purple/70 mb-6">There was a problem signing you in with this email link.</p>
+                    <div class="space-y-3">
+                        <button onclick="retrySignIn()" class="btn-primary-custom w-full">
+                            Try Again
+                        </button>
+                        <a href="{{ url_for('auth.login') }}" class="btn-secondary-custom w-full">
+                            ← Back to Login
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Email input for different device -->
+                <div id="email-input-state" class="hidden text-center py-8">
+                    <div class="mb-6">
+                        <i class="bi bi-envelope-fill text-saffron" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-dark-purple text-xl font-bold mb-3">Different Device Detected</h3>
+                    <p class="text-dark-purple/70 mb-6">
+                        It looks like you're opening this link on a different device. Please enter your email address to complete sign-in.
+                    </p>
+                    <form id="email-form" class="space-y-4">
+                        <div class="text-left">
+                            <label for="email" class="block text-dark-purple font-semibold mb-2">Email Address</label>
+                            <input type="email" id="email" name="email" required
+                                   class="form-input w-full" placeholder="your@email.com">
+                        </div>
+                        <button type="submit" class="btn-primary-custom w-full">
+                            Complete Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    
+    <script>
+        let emailLinkProcessed = false;
+
+        async function processEmailLink() {
+            if (emailLinkProcessed) return;
+            emailLinkProcessed = true;
+
+            try {
+                // Initialize Firebase auth
+                await initializeAuth();
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const emailLink = window.location.href;
+                
+                // Check if this is a valid email link
+                if (!isEmailLink()) {
+                    throw new Error('Invalid email link');
+                }
+
+                // Try to get stored email first
+                let email = getStoredEmailForSignIn();
+                
+                if (!email) {
+                    // Show email input form for different device
+                    showEmailInputState();
+                    return;
+                }
+
+                // Attempt sign-in with email link
+                const result = await signInWithEmailLink(email, emailLink);
+                
+                if (result.success) {
+                    showSuccessState();
+                    
+                    // Get Firebase ID token and verify with server
+                    const idToken = await result.user.getIdToken();
+                    await verifyWithServer(idToken, email);
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Email link processing error:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        async function verifyWithServer(idToken, email) {
+            try {
+                const response = await fetch('/auth/verify-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        idToken: idToken,
+                        email: email,
+                        authMethod: 'email'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Server response:', data); // DEBUG: Log the full response
+                
+                if (data.success) {
+                    console.log('Success! Redirecting to:', data.redirect_url); // DEBUG
+                    // Existing user - redirect based on user role
+                    const redirectUrl = data.redirect_url || '/dashboard';
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                } else if (data.new_user && data.redirect) {
+                    console.log('New user, redirecting to:', data.redirect); // DEBUG
+                    // New user - redirect to account type selection
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                } else {
+                    console.error('Unexpected response format:', data); // DEBUG
+                    throw new Error(data.error || 'Server verification failed');
+                }
+            } catch (error) {
+                console.error('Server verification error:', error);
+                showErrorState('Failed to verify sign-in with server');
+            }
+        }
+
+        function showSuccessState() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('email-input-state').classList.add('hidden');
+            document.getElementById('success-state').classList.remove('hidden');
+        }
+
+        function showErrorState(message) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('success-state').classList.add('hidden');
+            document.getElementById('email-input-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function showEmailInputState() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('success-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('email-input-state').classList.remove('hidden');
+        }
+
+        function retrySignIn() {
+            emailLinkProcessed = false;
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            processEmailLink();
+        }
+
+        // Handle email form submission for different device
+        document.getElementById('email-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            
+            try {
+                const emailLink = window.location.href;
+                const result = await signInWithEmailLink(email, emailLink);
+                
+                if (result.success) {
+                    showSuccessState();
+                    const idToken = await result.user.getIdToken();
+                    await verifyWithServer(idToken, email);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showErrorState(error.message);
+            }
+        });
+
+        // Process email link on page load
+        document.addEventListener('DOMContentLoaded', processEmailLink);
+    </script>
+{% endblock %}

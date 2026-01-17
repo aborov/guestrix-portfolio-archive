@@ -1,0 +1,3 @@
+telnyx
+google-generativeai
+firebase-admin

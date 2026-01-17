@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Account Confirmation{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-secondary-custom {
+        background-color: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #4b5563;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    }
+
+    /* Confirmation icon animation */
+    .confirmation-icon {
+        color: var(--persian-green);
+        animation: bounceIn 0.8s ease-in-out;
+    }
+
+    @keyframes bounceIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* User name highlight */
+    .user-name-highlight {
+        color: var(--persian-green);
+        font-weight: 700;
+        padding: 2px 6px;
+        background-color: rgba(42, 157, 143, 0.1);
+        border-radius: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Welcome back! Please confirm your identity</p>
+        </div>
+
+        <!-- Confirmation Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Account Confirmation</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <p class="text-dark-purple text-lg mb-4">{{ message }}</p>
+                    <div class="bg-persian-green/10 border border-persian-green/20 rounded-lg p-4">
+                        <p class="text-dark-purple/80 text-sm">
+                            If you are <span class="user-name-highlight">{{ user_name }}</span>, we'll log you into your permanent account with full access.
+                            <br><br>
+                            If not, we'll create a fresh temporary account for you.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <form method="POST" action="{{ url_for('magic.confirm_migrated_user', token=token) }}">
+                        <input type="hidden" name="confirmation" value="yes">
+                        <button type="submit" class="btn-primary-custom w-full flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Yes, that's me
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="{{ url_for('magic.confirm_migrated_user', token=token) }}">
+                        <input type="hidden" name="confirmation" value="no">
+                        <button type="submit" class="btn-secondary-custom w-full flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            No, I'm someone else
+                        </button>
+                    </form>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-dark-purple/60 text-sm">
+                        Having trouble? <a href="mailto:hello@guestrix.ai" class="text-persian-green hover:underline font-medium">Contact support</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

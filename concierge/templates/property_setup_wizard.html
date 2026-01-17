@@ -1,0 +1,1448 @@
+{% extends 'base.html' %}
+
+{% block title %}Property Setup Wizard{% endblock %}
+
+{% block styles %}
+<style>
+    /* Wizard-specific styles matching guest dashboard theme */
+    .wizard-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .wizard-header {
+        background: linear-gradient(135deg, #4a6fdc 0%, #3a5fc9 100%);
+        color: white;
+        padding: 25px 30px;
+        text-align: center;
+    }
+
+    .wizard-progress {
+        background: #f8f9fa;
+        padding: 20px 30px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .progress-steps {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 15px;
+        gap: 10px;
+        width: 100% !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    /* Additional overrides for progress steps horizontal layout */
+    .wizard-progress .progress-steps {
+        display: flex !important;
+        flex-direction: row !important;
+    }
+    
+    .progress-steps > * {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Force horizontal layout with stronger selectors */
+    div.wizard-progress div.progress-steps {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    div.wizard-progress div.progress-steps div.progress-step {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+    
+    /* Debugging: Show what's happening with the steps */
+    @media screen {
+        .wizard-progress {
+            outline: 2px solid green !important;
+        }
+        .progress-steps {
+            outline: 2px solid red !important;
+        }
+        .progress-step {
+            outline: 1px solid blue !important;
+        }
+    }
+
+    .progress-step {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        flex: 1 !important;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 10px 5px;
+        border-radius: 8px;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    .progress-step:hover {
+        background-color: rgba(74, 111, 220, 0.05);
+    }
+
+    .progress-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: -50%;
+        width: calc(100% - 20px);
+        height: 2px;
+        background: #dee2e6;
+        z-index: 0;
+    }
+
+    .progress-step.completed:not(:last-child)::after {
+        background: #28a745;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        border: 2px solid transparent;
+    }
+
+    .step-circle.active {
+        background: #4a6fdc;
+        color: white;
+        border: 2px solid #4a6fdc;
+        box-shadow: 0 0 0 4px rgba(74, 111, 220, 0.2);
+    }
+
+    .step-circle.completed {
+        background: #28a745;
+        color: white;
+        border: 2px solid #28a745;
+    }
+
+    .step-circle.completed::before {
+        content: '✓';
+        font-size: 16px;
+        font-weight: bold;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .step-label {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 500;
+        max-width: 80px;
+        line-height: 1.2;
+    }
+
+    .progress-step.active .step-label {
+        color: #4a6fdc;
+        font-weight: 600;
+    }
+
+    .progress-step.completed .step-label {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .progress-bar-container {
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a6fdc 0%, #28a745 100%);
+        transition: width 0.5s ease;
+        border-radius: 2px;
+    }
+
+    .wizard-content {
+        padding: 40px 30px;
+        min-height: 500px;
+    }
+
+    /* Hide all wizard steps with maximum specificity */
+    .wizard-container .wizard-content div.wizard-step {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* Show only the active step */
+    .wizard-container .wizard-content div.wizard-step.active {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        left: auto !important;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    /* Additional override for any conflicting styles - multiple selectors for maximum specificity */
+    div.wizard-step:not(.active),
+    .wizard-step:not(.active),
+    [data-step]:not(.active) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
+    /* Ensure active step is always visible */
+    div.wizard-step.active,
+    .wizard-step.active,
+    [data-step].active {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ULTIMATE FORCE - Nuclear option to hide all non-active steps */
+    .wizard-container .wizard-step[data-step="2"],
+    .wizard-container .wizard-step[data-step="3"],
+    .wizard-container .wizard-step[data-step="4"],
+    .wizard-container .wizard-step[data-step="5"],
+    .wizard-container .wizard-step[data-step="6"],
+    .wizard-container .wizard-step[data-step="7"],
+    .wizard-content .wizard-step[data-step="2"],
+    .wizard-content .wizard-step[data-step="3"],
+    .wizard-content .wizard-step[data-step="4"],
+    .wizard-content .wizard-step[data-step="5"],
+    .wizard-content .wizard-step[data-step="6"],
+    .wizard-content .wizard-step[data-step="7"],
+    div.wizard-step[data-step="2"],
+    div.wizard-step[data-step="3"],
+    div.wizard-step[data-step="4"],
+    div.wizard-step[data-step="5"],
+    div.wizard-step[data-step="6"],
+    div.wizard-step[data-step="7"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
+        z-index: -1 !important;
+    }
+
+    /* ULTIMATE FORCE - Nuclear option to show only step 1 initially */
+    .wizard-container .wizard-step[data-step="1"],
+    .wizard-content .wizard-step[data-step="1"],
+    div.wizard-step[data-step="1"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        overflow: visible !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
+
+    .wizard-navigation {
+        padding: 20px 30px;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .step-title {
+        color: #4a6fdc;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    /* Voice Chat Interface Styles */
+    .voice-message {
+        margin-bottom: 15px;
+        padding: 12px 16px;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .voice-message.user-message {
+        background-color: #4a6fdc;
+        color: white;
+        margin-left: auto;
+        margin-right: 0;
+    }
+
+    .voice-message.ai-message {
+        background-color: #e9ecef;
+        color: #495057;
+        margin-left: 0;
+        margin-right: auto;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
+
+    .role-label {
+        font-weight: 600;
+    }
+
+    .timestamp {
+        font-size: 0.7rem;
+    }
+
+    .message-content {
+        line-height: 1.4;
+    }
+
+    .voice-chat-btn {
+        background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+    }
+
+    .voice-chat-btn:hover {
+        background: linear-gradient(135deg, #ff8f00 0%, #f57c00 100%);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
+    }
+
+    .voice-chat-btn.active {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .voice-level-indicator {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .voice-wave {
+        width: 3px;
+        height: 20px;
+        background: #ffc107;
+        border-radius: 2px;
+        animation: wave 1.2s infinite ease-in-out;
+    }
+
+    .voice-wave:nth-child(2) {
+        animation-delay: -1.1s;
+    }
+
+    .voice-wave:nth-child(3) {
+        animation-delay: -1.0s;
+    }
+
+    @keyframes wave {
+        0%, 40%, 100% {
+            transform: scaleY(0.4);
+        }
+        20% {
+            transform: scaleY(1.0);
+        }
+    }
+
+    .chat-messages-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .chat-controls {
+        background: white;
+        border-top: 2px solid #dee2e6;
+    }
+
+    /* Progress summary styles */
+    .progress-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .progress-item:last-child {
+        border-bottom: none;
+    }
+
+    .progress-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-size: 12px;
+    }
+
+    .progress-icon.completed {
+        background: #28a745;
+        color: white;
+    }
+
+    .progress-icon.in-progress {
+        background: #ffc107;
+        color: white;
+    }
+
+    .progress-icon.pending {
+        background: #e9ecef;
+        color: #6c757d;
+    }
+
+    .step-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    /* Toggle switches */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: #4a6fdc;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    /* Form sections */
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-section h5 {
+        color: #4a6fdc;
+        margin-bottom: 15px;
+    }
+
+    /* File upload area */
+    .file-dropzone {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-dropzone:hover {
+        border-color: #4a6fdc;
+        background: rgba(74, 111, 220, 0.05);
+    }
+
+    .file-dropzone.drag-over {
+        border-color: #4a6fdc;
+        background: rgba(74, 111, 220, 0.1);
+    }
+
+    /* Recommendations grid */
+    .recommendations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .recommendation-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .recommendation-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .recommendation-item.selected {
+        border-color: #4a6fdc;
+        background: rgba(74, 111, 220, 0.05);
+    }
+
+    /* Voice chat button */
+    .voice-chat-btn {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+        border: none;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        color: white;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px auto;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .voice-chat-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .voice-chat-btn.listening {
+        animation: pulse 1.5s infinite;
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .wizard-container {
+            margin: 0 10px;
+            border-radius: 10px;
+        }
+        
+        .wizard-content {
+            padding: 30px 20px;
+        }
+        
+        .progress-steps {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .recommendations-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Knowledge Review Styles */
+    .knowledge-category {
+        margin-bottom: 30px;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+    }
+
+    .knowledge-category-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .knowledge-category-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .knowledge-category-count {
+        font-size: 12px;
+        background: #4a6fdc;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        margin-left: 10px;
+    }
+
+    .knowledge-item {
+        border-bottom: 1px solid #f1f3f4;
+        padding: 20px;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .knowledge-item:last-child {
+        border-bottom: none;
+    }
+
+    .knowledge-item:hover {
+        background: #f8f9fa;
+    }
+
+    .knowledge-item.pending {
+        border-left: 4px solid #ffc107;
+    }
+
+    .knowledge-item.approved {
+        border-left: 4px solid #28a745;
+    }
+
+    .knowledge-item.rejected {
+        border-left: 4px solid #dc3545;
+        opacity: 0.7;
+    }
+
+    .knowledge-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .knowledge-item-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .knowledge-item-type {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .knowledge-item-type.information {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .knowledge-item-type.rule {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    .knowledge-item-type.instruction {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .knowledge-item-type.amenity {
+        background: #e8f5e8;
+        color: #388e3c;
+    }
+
+    .knowledge-item-type.places {
+        background: #fce4ec;
+        color: #c2185b;
+    }
+
+    .knowledge-item-status {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .knowledge-item-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .knowledge-item-status.approved {
+        background: #d1edff;
+        color: #0c5460;
+    }
+
+    .knowledge-item-status.rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .knowledge-item-tags {
+        margin-bottom: 10px;
+    }
+
+    .knowledge-tag {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        margin-right: 5px;
+        margin-bottom: 3px;
+    }
+
+    .knowledge-item-content {
+        color: #2c3e50;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .knowledge-item-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .knowledge-item-actions .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    /* Edit form styling */
+    .knowledge-edit-form {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 15px;
+    }
+
+    .knowledge-edit-form .form-label {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .knowledge-edit-form .form-control,
+    .knowledge-edit-form .form-select {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+    }
+
+    .knowledge-edit-form .form-control:focus,
+    .knowledge-edit-form .form-select:focus {
+        border-color: #4a6fdc;
+        box-shadow: 0 0 0 0.2rem rgba(74, 111, 220, 0.25);
+    }
+
+    /* Empty state */
+    .knowledge-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .knowledge-empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .knowledge-item-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .knowledge-item-actions {
+            width: 100%;
+        }
+
+        .knowledge-item-actions .btn {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <!-- Wizard Header -->
+    <div class="wizard-header">
+        <h1 class="mb-0">Property Setup Wizard</h1>
+        <p class="mb-0 mt-2">Let's get your property set up step by step</p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="wizard-progress">
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <div class="step-circle active">1</div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Airbnb Data</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">House Rules</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Emergencies</div>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Local Spots</div>
+            </div>
+            <div class="progress-step" data-step="6">
+                <div class="step-circle">6</div>
+                <div class="step-label">Property Facts</div>
+            </div>
+            <div class="progress-step" data-step="7">
+                <div class="step-circle">7</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 14.3%"></div>
+        </div>
+    </div>
+
+    <!-- Wizard Content -->
+    <div class="wizard-content">
+        <!-- Step 1: Basic Information -->
+        <div class="wizard-step active" data-step="1">
+            <h2 class="step-title">Basic Property Information</h2>
+            <p class="step-subtitle">Let's start with the essential details about your property</p>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="property-name" class="form-label">Property Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="property-name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="property-address" class="form-label">Address <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="property-address" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="property-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="property-description" rows="3" placeholder="Describe your property..."></textarea>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h5>Check-in/Check-out Times</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="check-in-time" class="form-label">Check-in Time</label>
+                                <input type="time" class="form-control" id="check-in-time" value="15:00">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="check-out-time" class="form-label">Check-out Time</label>
+                                <input type="time" class="form-control" id="check-out-time" value="11:00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h5>WiFi Details</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="wifi-network" class="form-label">Network Name</label>
+                                <input type="text" class="form-control" id="wifi-network">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="wifi-password" class="form-label">Password</label>
+                                <input type="text" class="form-control" id="wifi-password">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Airbnb Data -->
+        <div class="wizard-step" data-step="2">
+            <h2 class="step-title">Airbnb Integration</h2>
+            <p class="step-subtitle">Connect your Airbnb calendar and import property data</p>
+            
+            <div class="form-section">
+                <h5>iCal Calendar Link</h5>
+                <p class="text-muted mb-3">To find your iCal link in Airbnb:</p>
+                <ol class="text-muted mb-3">
+                    <li>Go to your Airbnb calendar</li>
+                    <li>Click "Availability settings"</li>
+                    <li>Scroll down to "Calendar sync"</li>
+                    <li>Copy the "Export calendar" link</li>
+                </ol>
+                <div class="mb-3">
+                    <label for="ical-url" class="form-label">iCal URL</label>
+                    <input type="url" class="form-control" id="ical-url" placeholder="https://calendar.airbnb.com/calendar/...">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h5>Airbnb Property Data (JSON)</h5>
+                <div class="alert alert-info">
+                    <strong>How to Request Your Airbnb Data in JSON:</strong><br>
+                    1. Make sure you are logged into Airbnb and visit: <a href="https://www.airbnb.com/account-settings/privacy-and-sharing" target="_blank">Account Settings → Privacy & Sharing</a><br>
+                    2. Scroll down to "Request my personal data" and submit a new request choosing <strong>JSON</strong> as the data format<br>
+                    3. Airbnb may take 24–48 hours to prepare your file. You'll receive an email with a download link<br>
+                    4. Download it quickly as the link expires after a short time
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" id="data-requested">
+                        I have requested my Airbnb data in JSON format
+                    </label>
+                </div>
+                
+                <div class="alert alert-secondary">
+                    <strong>Next Steps:</strong><br>
+                    Once you receive your Airbnb data file (usually within 24-48 hours), you can upload it in <strong>Step 6: Property Facts</strong> where it will be automatically processed and integrated into your property knowledge base.
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: House Rules -->
+        <div class="wizard-step" data-step="3">
+            <h2 class="step-title">House Rules</h2>
+            <p class="step-subtitle">Set clear expectations for your guests</p>
+
+            <div id="house-rules-content">
+                <!-- Will be populated by JavaScript with unified rules -->
+                <div class="text-center py-8">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-gray-600">Loading house rules...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Emergencies -->
+        <div class="wizard-step" data-step="4">
+            <h2 class="step-title">Emergency Information</h2>
+            <p class="step-subtitle">Prepare your guests for emergency situations</p>
+            
+            <div id="emergency-info-container">
+                <!-- TODO: Will be populated by JavaScript with common emergency scenarios -->
+            </div>
+            
+            <button type="button" class="btn btn-outline-primary" id="add-custom-emergency">
+                <i class="bi bi-plus-circle me-2"></i>Add Custom Emergency Info
+            </button>
+        </div>
+
+        <!-- Step 5: Local Recommendations -->
+        <div class="wizard-step" data-step="5">
+            <h2 class="step-title">Local Recommendations</h2>
+            <p class="step-subtitle">Help your guests discover the best local spots</p>
+            
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" id="search-local-places">
+                    <i class="bi bi-search me-2"></i>Find Local Places
+                </button>
+                <small class="text-muted ms-2">We'll use your property address to find nearby recommendations</small>
+            </div>
+            
+            <div id="local-places-container">
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-geo-alt fs-1 mb-2"></i>
+                    <p>Click "Find Local Places" to discover nearby recommendations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Property Facts -->
+        <div class="wizard-step" data-step="6">
+            <h2 class="step-title">Property Facts & Details</h2>
+            <p class="step-subtitle">Add comprehensive information about your property</p>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Upload Files</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">Upload JSON files, documents, or other files with property information</p>
+                            <div class="file-dropzone" id="facts-dropzone">
+                                <i class="bi bi-file-earmark-text fs-2 text-muted mb-2"></i>
+                                <p class="small mb-0">Drop files here</p>
+                            </div>
+                            <input type="file" id="facts-file" multiple accept=".json,.pdf,.docx,.txt,.xlsx" class="d-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Manual Entry</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">Use our guided form to add amenities and details section by section</p>
+                            <button type="button" class="btn btn-success" id="start-manual-entry">
+                                Start Manual Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="bi bi-mic-fill me-2"></i>Talk to Leo</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">Chat with our AI host assistant to gather comprehensive property information</p>
+                            <button type="button" class="btn voice-chat-btn" id="start-voice-chat">
+                                <i class="bi bi-mic-fill"></i>
+                            </button>
+                            <p class="small text-center text-muted mt-2">Click to start talking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Entry Form (hidden by default) -->
+            <div id="manual-entry-form" class="mt-4" style="display: none;">
+                <!-- TODO: Will be populated with property sections -->
+            </div>
+            
+            <!-- Voice Chat Interface (hidden by default) -->
+            <div id="voice-chat-interface" class="mt-4" style="display: none;">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">
+                                <i class="bi bi-robot me-2"></i>Leo - Your AI Property Assistant
+                            </h5>
+                            <small class="opacity-75">Helping you complete your property knowledge base</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="closeVoiceChat()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Chat Messages Area -->
+                        <div id="voice-chat-messages" class="chat-messages-container" style="height: 400px; overflow-y: auto; padding: 15px; background-color: #f8f9fa;">
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-chat-dots fs-1 mb-2"></i>
+                                <p>Your conversation with Leo will appear here</p>
+                                <p class="small">He'll help you gather comprehensive information about your property</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Control Area -->
+                        <div class="chat-controls p-3 border-top bg-white">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-warning btn-lg rounded-circle" id="voice-chat-control" style="width: 60px; height: 60px;">
+                                        <i class="bi bi-mic-fill fs-4"></i>
+                                    </button>
+                                </div>
+                                <div class="col">
+                                    <div id="voice-status-text" class="fw-semibold text-muted">
+                                        Click the microphone to start your conversation with Leo
+                                    </div>
+                                    <div id="voice-status-detail" class="small text-muted">
+                                        He'll ask you questions to help complete your property information
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="voice-level-indicator" id="voice-level" style="display: none;">
+                                        <div class="voice-wave"></div>
+                                        <div class="voice-wave"></div>
+                                        <div class="voice-wave"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Voice Chat Progress Summary -->
+                <div class="card mt-3 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>Information Gathering Progress
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="voice-progress-summary">
+                            <div class="text-center text-muted py-2">
+                                <small>Progress will be shown here as you provide information</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7: Review & Approval -->
+        <div class="wizard-step" data-step="7">
+            <h2 class="step-title">Review & Approve Knowledge Items</h2>
+            <div class="alert alert-info mb-4">
+                <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Review Generated Knowledge</h6>
+                <p class="mb-2">
+                    Based on all the information you've provided through the wizard steps, our AI has generated structured knowledge items for your property. 
+                    These items will be used by Staycee, our guest AI agent, to help answer questions from your guests.
+                </p>
+                <p class="mb-0">
+                    <strong>Please review each item carefully and approve the ones you want to include in your property's knowledge base.</strong> 
+                    You can edit, remove, or add new items as needed.
+                </p>
+            </div>
+            
+            <div id="knowledge-review-container">
+                <!-- Loading state -->
+                <div id="knowledge-loading" class="text-center text-muted py-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Generating knowledge items from your property information...</p>
+                    <small class="text-muted">This may take a few moments</small>
+                </div>
+
+                <!-- Knowledge drafts will be displayed here -->
+                <div id="knowledge-drafts" class="d-none">
+                    <!-- Controls -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary me-2"><span id="total-drafts-count">0</span> total</span>
+                            <span class="badge bg-success me-2"><span id="approved-drafts-count">0</span> approved</span>
+                            <span class="badge bg-warning"><span id="pending-drafts-count">0</span> pending</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" id="add-knowledge-item">
+                                <i class="bi bi-plus-circle me-1"></i>Add Item
+                            </button>
+                            <button class="btn btn-outline-success btn-sm ms-1" id="approve-all-drafts">
+                                <i class="bi bi-check-all me-1"></i>Approve All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Knowledge items grouped by category -->
+                    <div id="knowledge-categories-container">
+                        <!-- Categories will be populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Error state -->
+                <div id="knowledge-error" class="alert alert-danger d-none">
+                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Error Generating Knowledge</h6>
+                    <p class="mb-2">We encountered an issue generating knowledge items from your property information.</p>
+                    <button class="btn btn-outline-danger btn-sm" id="retry-generation-btn">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Try Again
+                    </button>
+                </div>
+            </div>
+
+            <!-- Final instructions -->
+            <div id="final-instructions" class="alert alert-warning mt-4 d-none">
+                <h6 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Ready to Create Property</h6>
+                <p class="mb-2">
+                    Once you've reviewed and approved the knowledge items you want to include, click the "Create Property" button below to finalize your property setup.
+                </p>
+                <p class="mb-0">
+                    <strong>After creation:</strong> Your property will be added to your dashboard, approved knowledge items will be available to Staycee for guest assistance, 
+                    and any unused entries from this wizard will be cleaned up. You can manage your knowledge base later from the Properties section.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="wizard-navigation">
+        <button type="button" class="btn btn-outline-secondary" id="prev-btn" disabled>
+            <i class="bi bi-arrow-left me-2"></i>Previous
+        </button>
+        
+        <div class="wizard-actions">
+            <button type="button" class="btn btn-outline-primary" id="save-progress">
+                <i class="bi bi-save me-2"></i>Save Progress
+            </button>
+        </div>
+        
+        <button type="button" class="btn btn-primary" id="next-btn">
+            Next<i class="bi bi-arrow-right ms-2"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Edit Knowledge Item Modal -->
+<div class="modal fade" id="editKnowledgeModal" tabindex="-1" aria-labelledby="editKnowledgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editKnowledgeModalLabel">Edit Knowledge Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editKnowledgeForm">
+                    <input type="hidden" id="editKnowledgeId">
+                    <div class="mb-3">
+                        <label for="editKnowledgeType" class="form-label">Type</label>
+                        <select class="form-select" id="editKnowledgeType" required>
+                            <option value="information">Information</option>
+                            <option value="rule">Rule</option>
+                            <option value="instruction">Instruction</option>
+                            <option value="amenity">Amenity</option>
+                            <option value="places">Places</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editKnowledgeTags" class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="editKnowledgeTags" placeholder="Enter tags separated by commas">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editKnowledgeContent" class="form-label">Content</label>
+                        <textarea class="form-control" id="editKnowledgeContent" rows="8" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveKnowledgeChanges">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Knowledge Item Modal -->
+<div class="modal fade" id="addKnowledgeModal" tabindex="-1" aria-labelledby="addKnowledgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addKnowledgeModalLabel">Add Knowledge Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addKnowledgeForm">
+                    <div class="mb-3">
+                        <label for="addKnowledgeType" class="form-label">Type</label>
+                        <select class="form-select" id="addKnowledgeType" required>
+                            <option value="">Select type...</option>
+                            <option value="information">Information</option>
+                            <option value="rule">Rule</option>
+                            <option value="instruction">Instruction</option>
+                            <option value="amenity">Amenity</option>
+                            <option value="places">Places</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addKnowledgeTags" class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" id="addKnowledgeTags" placeholder="Enter tags separated by commas">
+                    </div>
+                    <div class="mb-3">
+                        <label for="addKnowledgeContent" class="form-label">Content</label>
+                        <textarea class="form-control" id="addKnowledgeContent" rows="8" required placeholder="Enter the knowledge content..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addKnowledgeItem">Add Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Global variables and configuration -->
+<script>
+// Define global user ID for voice agent and other functionality
+window.CURRENT_USER_ID = "{{ user_id }}";
+console.log("✅ Global variables initialized - User ID:", window.CURRENT_USER_ID);
+</script>
+
+<!-- IMMEDIATE STEP HIDING - Run as soon as HTML is parsed -->
+<script>
+console.log('IMMEDIATE SCRIPT: Hiding non-active steps before any other JavaScript runs...');
+// Hide all steps except step 1 immediately
+document.querySelectorAll('.wizard-step[data-step]').forEach(step => {
+    const stepNumber = parseInt(step.dataset.step);
+    if (stepNumber !== 1) {
+        step.style.setProperty('display', 'none', 'important');
+        step.style.setProperty('visibility', 'hidden', 'important');
+        step.style.setProperty('opacity', '0', 'important');
+        step.style.setProperty('position', 'absolute', 'important');
+        step.style.setProperty('left', '-99999px', 'important');
+        step.classList.remove('active');
+        console.log(`IMMEDIATE: Hid step ${stepNumber}`);
+    } else {
+        step.style.setProperty('display', 'block', 'important');
+        step.style.setProperty('visibility', 'visible', 'important');
+        step.style.setProperty('opacity', '1', 'important');
+        step.style.setProperty('position', 'relative', 'important');
+        step.style.setProperty('left', 'auto', 'important');
+        step.classList.add('active');
+        console.log(`IMMEDIATE: Showed step ${stepNumber}`);
+    }
+});
+</script>
+
+<script src="{{ url_for('static', filename='js/property-setup-wizard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/property-setup-voice-agent.js') }}"></script>
+
+<script>
+// Voice chat utility functions
+function showVoiceChat() {
+    const voiceChatInterface = document.getElementById('voice-chat-interface');
+    if (voiceChatInterface) {
+        voiceChatInterface.style.display = 'block';
+        voiceChatInterface.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function closeVoiceChat() {
+    const voiceChatInterface = document.getElementById('voice-chat-interface');
+    if (voiceChatInterface) {
+        voiceChatInterface.style.display = 'none';
+    }
+    
+    // Stop voice agent if active
+    if (window.voiceAgent && window.voiceAgent.voiceAgentState === 'active') {
+        window.voiceAgent.stopVoiceAgent('User closed interface');
+    }
+}
+
+function updateVoiceProgressSummary(gaps, completedCategories = []) {
+    const summaryContainer = document.getElementById('voice-progress-summary');
+    if (!summaryContainer || !gaps || gaps.length === 0) return;
+    
+    let html = '';
+    gaps.forEach(gap => {
+        const isCompleted = completedCategories.includes(gap.category);
+        const iconClass = isCompleted ? 'completed' : 'pending';
+        const icon = isCompleted ? '✓' : '○';
+        
+        html += `
+            <div class="progress-item">
+                <div class="progress-icon ${iconClass}">${icon}</div>
+                <div>
+                    <div class="fw-semibold">${gap.category}</div>
+                    <div class="small text-muted">${gap.questions.length} questions</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    summaryContainer.innerHTML = html;
+}
+
+// Integrate voice chat button with existing startVoiceChat function
+document.addEventListener('DOMContentLoaded', function() {
+    // Override the existing startVoiceChat function from the wizard
+    if (window.PropertySetupWizard && window.PropertySetupWizard.prototype.startVoiceChat) {
+        window.PropertySetupWizard.prototype.startVoiceChat = function() {
+            console.log('🎙️ Starting enhanced voice chat...');
+            showVoiceChat();
+            
+            // Call the voice agent function
+            if (window.voiceAgent && window.voiceAgent.handleVoiceChatStart) {
+                window.voiceAgent.handleVoiceChatStart();
+            } else {
+                console.error('❌ Voice agent not loaded');
+            }
+        };
+    }
+    
+    // Bind the voice chat control button 
+    const voiceChatControl = document.getElementById('voice-chat-control');
+    if (voiceChatControl) {
+        voiceChatControl.addEventListener('click', function() {
+            if (window.voiceAgent && window.voiceAgent.handleVoiceChatStart) {
+                window.voiceAgent.handleVoiceChatStart();
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

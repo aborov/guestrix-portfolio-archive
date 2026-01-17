@@ -1,0 +1,10 @@
+{
+  "resourceName": "WaitList",
+  "tableName": "WaitList",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

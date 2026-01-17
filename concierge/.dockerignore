@@ -1,0 +1,21 @@
+# Docker build context ignores
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Ignore common build artifacts and envs from context
+.git/
+.gitignore
+.dockerignore
+docker-compose*.yml
+README.md
+LICENSE
+.env*
+.venv/
+venv/
+env/
+ENV/
+node_modules/
+cdk.out/
+infra/

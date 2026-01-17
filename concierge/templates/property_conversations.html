@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Conversations - {{ property.name }}{% endblock %}
+
+{% from "partials/conversation_view.html" import render_conversation, render_conversation_card, conversation_styles %}
+
+{% block styles %}
+{{ conversation_styles() }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Conversations - {{ property.name }}</h1>
+        <a href="{{ url_for('views.properties_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Properties
+        </a>
+    </div>
+
+    {% if conversations %}
+        <div class="row">
+            {% for conversation in conversations %}
+                <div class="col-md-6 mb-4">
+                    {{ render_conversation_card(conversation) }}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No conversations found for this property.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Conversation Modal -->
+<div class="modal fade" id="conversationModal" tabindex="-1" aria-labelledby="conversationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="conversationModalLabel">Conversation Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="conversationDetails">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading conversation...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store all conversation data
+        const conversationData = {
+            {% for conversation in conversations %}
+                "{{ conversation.id }}": {
+                    id: "{{ conversation.id }}",
+                    guest_name: "{{ conversation.guest_name }}",
+                    channel: "{{ conversation.channel }}",
+                    start_time: "{{ conversation.start_time|replace('T', ' ')|replace('Z', '') }}",
+                    last_update_time: "{{ conversation.last_update_time|replace('T', ' ')|replace('Z', '') }}",
+                    message_count: {{ conversation.message_count }},
+                    messages: {{ conversation.messages|tojson }},
+                    summary: `{{ conversation.summary|replace('\n', ' ')|safe }}`,
+                    {% if conversation.reservation %}
+                    reservation: {
+                        guestName: "{{ conversation.reservation.guestName }}",
+                        guestPhone: "{{ conversation.reservation.guestPhone }}",
+                        checkInDate: "{{ conversation.reservation.checkInDate }}",
+                        checkOutDate: "{{ conversation.reservation.checkOutDate }}"
+                    }
+                    {% else %}
+                    reservation: null
+                    {% endif %}
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+
+        // Handle clicking on a conversation card
+        document.querySelectorAll('.conversation-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const conversationId = this.dataset.conversationId;
+                displayConversationDetails(conversationId);
+            });
+        });
+
+        // Function to display conversation details in the modal
+        function displayConversationDetails(conversationId) {
+            const conversation = conversationData[conversationId];
+            if (!conversation) {
+                console.error('Conversation not found:', conversationId);
+                return;
+            }
+
+            const detailsContainer = document.getElementById('conversationDetails');
+
+            // Use server-side rendering to generate the conversation HTML
+            const url = `/properties/{{ property.id }}/conversations/${conversationId}/render`;
+            console.log('Fetching conversation HTML from:', url);
+
+            fetch(url)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('Received HTML length:', html.length);
+
+                    // Create an iframe to display the HTML
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '70vh';
+                    iframe.style.border = 'none';
+
+                    // Clear the container and add the iframe
+                    detailsContainer.innerHTML = '';
+                    detailsContainer.appendChild(iframe);
+
+                    // Write the HTML to the iframe
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(html);
+                    iframeDoc.close();
+                })
+                .catch(error => {
+                    console.error('Error fetching conversation HTML:', error);
+                    detailsContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h4>Error loading conversation details</h4>
+                            <p>Conversation ID: ${conversationId}</p>
+                            <p>Error: ${error.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                });
+        }
+    });
+</script>
+{% endblock %}

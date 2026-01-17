@@ -1,0 +1,9 @@
+aws-cdk-lib==2.124.0
+constructs>=10.0.0,<11.0.0
+python-dotenv 
+google-cloud-firestore==2.20.2
+google-cloud-storage==2.14.0
+# lancedb==0.5.3  # Removed - migrated to Firestore for vector search
+boto3==1.34.34
+botocore==1.34.34
+eventlet>=0.39

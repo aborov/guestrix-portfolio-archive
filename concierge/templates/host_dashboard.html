@@ -1,0 +1,927 @@
+{% extends "base.html" %}
+
+{% block title %}Host Dashboard - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    /* Custom color palette matching Guest dashboard */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    .border-persian-green { border-color: var(--persian-green); }
+    .border-saffron { border-color: var(--saffron); }
+    .border-dark-purple { border-color: var(--dark-purple); }
+    .border-light-cyan { border-color: var(--light-cyan); }
+    .border-bittersweet { border-color: var(--bittersweet); }
+
+    .hover\:bg-persian-green:hover { background-color: var(--persian-green); }
+    .hover\:bg-saffron:hover { background-color: var(--saffron); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Hide default navbar and footer */
+    .navbar { display: none !important; }
+    .container.mt-4 { margin-top: 0 !important; padding: 0 !important; max-width: none !important; }
+    footer { display: none !important; }
+
+    /* Custom scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--persian-green);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #248076;
+    }
+
+    /* Screen content area */
+    .screen-content {
+        height: calc(100vh - 140px);
+        overflow-y: auto;
+    }
+
+    /* Tab transitions */
+    .tab-content {
+        opacity: 0;
+        transform: translateX(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .tab-content.active {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Property card hover effects */
+    .property-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .property-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Toggle switch for property status */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+        background-color: var(--persian-green);
+    }
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    /* Status badges */
+    .status-badge-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .status-badge-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Loading animation */
+    .loading-spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid var(--persian-green);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Calendar Timeline View Styles */
+    .calendar-grid {
+        font-size: 14px;
+    }
+
+    .calendar-day {
+        min-height: 120px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reservation-bar {
+        font-size: 11px;
+        line-height: 1.2;
+        margin-bottom: 2px;
+        position: relative;
+        z-index: 1;
+        min-height: 20px;
+    }
+
+    .reservation-bar:hover {
+        z-index: 10;
+        filter: brightness(1.1);
+    }
+
+    .reservation-tooltip {
+        pointer-events: none;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .calendar-header {
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+    }
+
+    .calendar-body .calendar-day:nth-child(7n+1) {
+        border-left: 2px solid var(--persian-green);
+    }
+
+    .calendar-body .calendar-day:nth-child(7n) {
+        border-right: 2px solid var(--persian-green);
+    }
+
+    /* Platform-specific colors */
+    .platform-airbnb { background-color: #FF5A5F !important; }
+    .platform-booking { background-color: #003580 !important; }
+    .platform-vrbo { background-color: #0066CC !important; }
+    .platform-expedia { background-color: #FFC72C !important; color: #333 !important; }
+    .platform-direct { background-color: var(--persian-green) !important; }
+
+    /* Settings Modal Styles */
+    .settings-tab-btn {
+        transition: all 0.2s ease;
+    }
+
+    .settings-tab-btn.active {
+        border-color: var(--persian-green) !important;
+        color: var(--persian-green) !important;
+    }
+
+    .settings-tab-btn:not(.active) {
+        border-color: transparent;
+        color: #6b7280;
+    }
+
+    .settings-tab-btn:not(.active):hover {
+        color: #374151;
+        border-color: #d1d5db;
+    }
+
+    .settings-tab-content {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .settings-message {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Property Management Modal Styles */
+    .property-tab-btn {
+        transition: all 0.2s ease;
+    }
+
+    .property-tab-btn.active {
+        border-color: var(--persian-green) !important;
+        color: var(--persian-green) !important;
+    }
+
+    .property-tab-btn:not(.active) {
+        border-color: transparent;
+        color: #6b7280;
+    }
+
+    .property-tab-btn:not(.active):hover {
+        color: #374151;
+        border-color: #d1d5db;
+    }
+
+    .property-tab-content {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* Editable field styles */
+    .editable-field {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+        min-height: 24px;
+        display: inline-block;
+        min-width: 100px;
+    }
+
+    .editable-field:hover {
+        background-color: #f3f4f6;
+    }
+
+    .editable-field.editing {
+        background-color: white;
+        border: 2px solid var(--persian-green);
+        cursor: text;
+    }
+
+    .editable-field input {
+        border: none;
+        outline: none;
+        background: transparent;
+        width: 100%;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+    }
+
+    /* Knowledge item status colors */
+    .knowledge-item {
+        transition: all 0.2s ease;
+    }
+
+    .knowledge-item.pending {
+        background-color: #fef3c7 !important;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .knowledge-item.approved {
+        background-color: #d1fae5 !important;
+        border-left: 4px solid #10b981;
+    }
+
+    .knowledge-item.rejected {
+        background-color: #fee2e2 !important;
+        border-left: 4px solid #ef4444;
+    }
+
+    .knowledge-item.error {
+        background-color: #fde2e2 !important;
+        border-left: 4px solid #dc2626;
+    }
+
+    /* Knowledge type badges */
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .type-information { background-color: #dbeafe; color: #1e40af; }
+    .type-rule { background-color: #fce7f3; color: #be185d; }
+    .type-instruction { background-color: #e0e7ff; color: #3730a3; }
+    .type-amenity { background-color: #d1fae5; color: #065f46; }
+    .type-places { background-color: #fef3c7; color: #92400e; }
+    .type-basic-info { background-color: #f0f9ff; color: #0c4a6e; }
+    .type-house-rule { background-color: #fef2f2; color: #991b1b; }
+    .type-emergency { background-color: #fee2e2; color: #dc2626; }
+    .type-local-recommendation { background-color: #fdf4ff; color: #a21caf; }
+    .type-property-fact { background-color: #ecfdf5; color: #166534; }
+    .type-other { background-color: #f3f4f6; color: #374151; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .screen-content {
+            height: calc(100vh - 120px);
+        }
+        .calendar-day {
+            min-height: 80px;
+            font-size: 12px;
+        }
+        .reservation-bar {
+            font-size: 10px;
+            padding: 2px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-persian-green">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="size-8 md:size-12">
+                        <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                             alt="Guestrix Logo"
+                             class="w-full h-full object-contain" />
+                    </div>
+                    <h1 class="text-dark-purple text-lg md:text-xl font-bold leading-tight tracking-[-0.015em]">Guestrix Host</h1>
+                </div>
+
+                <!-- User Info and Actions -->
+                <div class="flex items-center gap-2 md:gap-4">
+                    <span class="text-dark-purple text-sm md:text-lg font-medium hidden md:inline">
+                        Welcome, {{ display_name or 'Host' }}!
+                    </span>
+                    <button onclick="openSettingsModal()"
+                            class="flex items-center justify-center rounded-full h-8 md:h-10 bg-persian-green/10 text-dark-purple hover:bg-persian-green/20 transition-colors p-1 md:p-2"
+                            title="Settings">
+                        <i class="fas fa-cog text-sm md:text-base"></i>
+                    </button>
+                    <button onclick="logout()"
+                            class="flex items-center justify-center rounded-full h-8 md:h-10 px-2 md:px-4 bg-persian-green text-white text-xs md:text-sm font-medium hover:bg-persian-green/90 transition-colors">
+                        <span class="hidden md:inline">Logout</span>
+                        <svg class="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-gray-200 px-2 sm:px-4 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-center space-x-4 md:space-x-8 tab-nav">
+                <button onclick="showScreen('properties')"
+                        class="py-3 md:py-4 px-4 md:px-6 border-b-2 font-medium text-sm transition-colors tab-button flex items-center justify-center"
+                        id="properties-tab">
+                    <i class="fas fa-home text-sm mr-2"></i>
+                    <span class="hidden sm:inline">Properties</span>
+                </button>
+                <button onclick="showScreen('calendar')"
+                        class="py-3 md:py-4 px-4 md:px-6 border-b-2 font-medium text-sm transition-colors tab-button flex items-center justify-center"
+                        id="calendar-tab">
+                    <i class="fas fa-calendar-alt text-sm mr-2"></i>
+                    <span class="hidden sm:inline">Calendar</span>
+                </button>
+                <button onclick="showScreen('support')"
+                        class="py-3 md:py-4 px-4 md:px-6 border-b-2 font-medium text-sm transition-colors tab-button flex items-center justify-center"
+                        id="support-tab">
+                    <i class="fas fa-headset text-sm mr-2"></i>
+                    <span class="hidden sm:inline">Support Center</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Properties Screen -->
+        <div id="properties-screen" class="tab-content active">
+            <div class="screen-content custom-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-dark-purple">Properties</h2>
+                    <button onclick="addNewProperty()" class="bg-persian-green hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i><span class="add-property-text">Add Property</span>
+                    </button>
+                </div>
+
+                <!-- Properties Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="properties-grid">
+                    <!-- Properties will be loaded here -->
+                    <div class="col-span-full text-center py-8">
+                        <div class="loading-spinner mx-auto mb-4"></div>
+                        <p class="text-gray-600">Loading properties...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Screen -->
+        <div id="calendar-screen" class="tab-content">
+            <div class="screen-content custom-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-dark-purple">Calendar</h2>
+                    <div class="flex space-x-4">
+                        <button onclick="toggleCalendarView()"
+                                class="bg-saffron hover:bg-yellow-500 text-dark-purple px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors"
+                                id="calendar-view-toggle">
+                            <i class="fas fa-calendar-alt sm:mr-2"></i>
+                            <span class="hidden sm:inline">Calendar View</span>
+                        </button>
+                        <button onclick="refreshReservations()" 
+                                class="bg-persian-green hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-sync-alt sm:mr-2"></i>
+                            <span class="hidden sm:inline">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Property Filter -->
+                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex items-center gap-4">
+                        <label for="property-filter" class="text-sm font-medium text-dark-purple">Filter by Property:</label>
+                        <select id="property-filter" onchange="filterCalendarByProperty()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-persian-green">
+                            <option value="">All Properties</option>
+                            <!-- Property options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Calendar Content -->
+                <div id="calendar-content">
+                    <!-- Loading State -->
+                    <div id="calendar-loading" class="text-center py-8">
+                        <div class="loading-spinner mx-auto mb-4"></div>
+                        <p class="text-dark-purple/70">Loading reservations...</p>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="calendar-error" class="hidden text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Error loading reservations</p>
+                        <button onclick="refreshReservations()" class="bg-persian-green hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-sync-alt sm:mr-2"></i>
+                            <span class="hidden sm:inline">Try Again</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="calendar-empty" class="hidden text-center py-8">
+                        <i class="fas fa-calendar-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">No reservations found</p>
+                        <p class="text-sm text-gray-500">Reservations will appear here when you have bookings on your properties</p>
+                    </div>
+                    
+                    <!-- List View Content -->
+                    <div id="calendar-list-view" class="hidden">
+                        <div class="space-y-4" id="reservations-list">
+                            <!-- Reservation cards will be added here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline View Content -->
+                    <div id="calendar-timeline-view" class="hidden">
+                        <!-- Calendar content will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUPPORT CENTER SCREEN -->
+        <div id="support-screen" class="tab-content">
+            <div class="screen-content custom-scrollbar">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-dark-purple">Support Center</h2>
+                    <div class="flex space-x-4">
+                        <button onclick="showConversationFilters()"
+                                class="bg-saffron hover:bg-yellow-500 text-dark-purple px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-filter mr-2"></i>Filter
+                        </button>
+                        <button onclick="refreshConversations()"
+                                class="bg-persian-green hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conversations Section -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <!-- Conversations Header -->
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xl font-semibold text-dark-purple">
+                                <i class="fas fa-comments mr-2"></i>Guest Conversations
+                            </h3>
+                            <div class="flex items-center space-x-4">
+                                <!-- Filter Chips -->
+                                <div id="filter-chips" class="flex space-x-2">
+                                    <!-- Filter chips will be populated by JavaScript -->
+                                </div>
+                                <!-- Stats -->
+                                <div class="text-sm text-gray-600">
+                                    <span id="conversations-count">Loading...</span> conversations
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Bar -->
+                        <div id="filter-bar" class="mt-4 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Channel</label>
+                                    <select id="channel-filter" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                        <option value="">All Channels</option>
+                                        <option value="text_chat">Text Chat</option>
+                                        <option value="voice_call">Voice Call</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Property</label>
+                                    <select id="property-filter" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                        <option value="">All Properties</option>
+                                        <!-- Properties will be populated by JavaScript -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                                    <input type="date" id="date-from-filter" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                                    <input type="date" id="date-to-filter" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                </div>
+                            </div>
+                            <div class="mt-3 flex justify-end space-x-2">
+                                <button onclick="clearConversationFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
+                                    Clear Filters
+                                </button>
+                                <button onclick="applyConversationFilters()" class="px-4 py-2 bg-persian-green text-white rounded-md text-sm hover:bg-green-600">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conversations List -->
+                    <div id="conversations-container" class="divide-y divide-gray-200">
+                        <!-- Loading State -->
+                        <div id="conversations-loading" class="p-8 text-center">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-persian-green"></div>
+                            <p class="mt-2 text-gray-600">Loading conversations...</p>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="conversations-empty" class="p-8 text-center hidden">
+                            <i class="fas fa-comment-dots text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600">No conversations found</p>
+                            <p class="text-sm text-gray-500 mt-1">Conversations will appear here when guests contact you</p>
+                        </div>
+
+                        <!-- Conversations List -->
+                        <div id="conversations-list">
+                            <!-- Conversation items will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Load More -->
+                    <div id="load-more-container" class="border-t border-gray-200 p-4 text-center hidden">
+                        <button onclick="loadMoreConversations()"
+                                id="load-more-btn"
+                                class="px-4 py-2 text-persian-green hover:text-green-600 font-medium">
+                            Load More Conversations
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Conversation Detail Modal -->
+<div id="conversation-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full h-[95vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="border-b border-gray-200 px-6 py-4 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-dark-purple" id="conversation-modal-title">
+                        Conversation Details
+                    </h3>
+                    <button onclick="closeConversationModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <!-- Conversation Info -->
+                <div id="conversation-info" class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <!-- Info will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Loading State -->
+                <div id="conversation-modal-loading" class="p-8 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-persian-green"></div>
+                    <p class="mt-2 text-gray-600">Loading conversation details...</p>
+                </div>
+
+                <!-- Conversation Content -->
+                <div id="conversation-content" class="hidden">
+                    <!-- Summary (common for both text and voice) -->
+                    <div class="px-6 pt-6">
+                        <h4 class="text-lg font-semibold text-dark-purple mb-2">
+                            <i class="fas fa-file-alt mr-2"></i>Summary
+                        </h4>
+                        <div id="conversation-summary" class="bg-gray-50 rounded-lg p-4 text-sm text-gray-700"></div>
+                    </div>
+                    <!-- Text Chat Content -->
+                    <div id="text-chat-content" class="p-6">
+                        <div id="text-messages" class="space-y-4">
+                            <!-- Messages will be populated by JavaScript -->
+                        </div>
+                        <!-- Quality Metrics for Text Chat (feedback shown here) -->
+                        <div class="mt-6">
+                            <h4 class="text-lg font-semibold text-dark-purple mb-3">
+                                <i class="fas fa-chart-line mr-2"></i>Quality Metrics
+                            </h4>
+                            <div id="quality-metrics-text" class="bg-gray-50 rounded-lg p-4">
+                                <!-- Metrics will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voice Call Content -->
+                    <div id="voice-call-content" class="p-6">
+                        <!-- Transcript Section -->
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold text-dark-purple mb-3">
+                                <i class="fas fa-microphone mr-2"></i>Conversation Transcript
+                            </h4>
+                            <div id="voice-transcript" class="space-y-3 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                <!-- Transcript will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Quality Metrics (Voice) -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-dark-purple mb-3">
+                                <i class="fas fa-chart-line mr-2"></i>Quality Metrics
+                            </h4>
+                            <div id="quality-metrics" class="bg-gray-50 rounded-lg p-4">
+                                <!-- Metrics will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-gray-200 px-6 py-4 bg-gray-50 flex-shrink-0">
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeConversationModal()"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        Close
+                    </button>
+                    <button onclick="exportConversation()"
+                            class="px-4 py-2 bg-persian-green text-white rounded-lg hover:bg-green-600 font-medium">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-persian-green text-white p-6 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">Settings</h3>
+                    <button onclick="closeSettingsModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Settings content will be loaded here -->
+                <div id="settings-content">
+                    <!-- Content will be dynamically loaded by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Details Modal -->
+<div id="reservation-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="bg-persian-green text-white p-6 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">
+                        <i class="fas fa-calendar-alt mr-2"></i>Reservation Details
+                    </h3>
+                    <button onclick="closeReservationDetailsModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div id="reservation-details-content">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property Management Modal -->
+<div id="knowledge-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-7xl w-full h-[95vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-persian-green text-white p-6 rounded-t-lg flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">
+                        <i class="fas fa-cog mr-2"></i>Property Management
+                    </h3>
+                    <button onclick="closeKnowledgeModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Property Details Section -->
+            <div id="property-details-section" class="bg-gray-50 border-b border-gray-200 p-4 flex-shrink-0">
+                <!-- Property details will be loaded here -->
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 flex-shrink-0">
+                <nav class="flex space-x-8 px-6">
+                    <button onclick="showPropertyTab('knowledge')"
+                            class="property-tab-btn py-3 px-1 border-b-2 font-medium text-sm active"
+                            data-tab="knowledge">
+                        <i class="fas fa-book mr-2"></i>Knowledge Base
+                    </button>
+                    <button onclick="showPropertyTab('configuration')"
+                            class="property-tab-btn py-3 px-1 border-b-2 font-medium text-sm"
+                            data-tab="configuration">
+                        <i class="fas fa-sliders-h mr-2"></i>Configuration
+                    </button>
+                    <!-- Analytics tab - disabled as requested
+                    <button onclick="showPropertyTab('analytics')"
+                            class="property-tab-btn py-3 px-1 border-b-2 font-medium text-sm"
+                            data-tab="analytics">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </button>
+                    -->
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Knowledge Tab -->
+                <div id="property-knowledge-tab" class="property-tab-content p-6">
+                    <div id="knowledge-modal-content">
+                        <!-- Knowledge content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Configuration Tab -->
+                <div id="property-configuration-tab" class="property-tab-content hidden p-6">
+                    <div id="configuration-content">
+                        <!-- Configuration content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Analytics Tab - disabled as requested
+                <div id="property-analytics-tab" class="property-tab-content hidden p-6">
+                    <div id="analytics-content">
+                        <!-- Analytics content will be loaded here -->
+                    </div>
+                </div>
+                -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Magic Link Modal -->
+<div id="magic-link-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div class="bg-persian-green text-white p-6 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold">
+                        <i class="fas fa-link mr-2"></i>Guest Access Link Generated
+                    </h3>
+                    <button onclick="closeMagicLinkModal()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-dark-purple mb-2">Guest Access Link:</label>
+                        <div class="flex items-center gap-2">
+                            <input id="magic-link-url" type="text" readonly 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-persian-green">
+                            <button onclick="copyMagicLink()" class="bg-persian-green hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-dark-purple mb-2">Verification Code (Last 4 digits):</label>
+                        <input id="magic-link-verification" type="text" readonly 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-persian-green">
+                    </div>
+                    
+                    <div class="bg-light-cyan rounded-lg p-4">
+                        <p class="text-sm text-dark-purple">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Send this link to your guest. They'll need to verify their identity with the last 4 digits of their phone number.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Debug output for template variables -->
+<script>
+    console.log("Host Dashboard Template Data:");
+    console.log("- Name:", "{{ display_name }}" || "Not provided");
+    console.log("- Email:", "{{ email }}" || "Not provided");
+    console.log("- Phone Number:", "{{ phone_number }}" || "Not provided");
+    console.log("- User ID:", "{{ user_id }}" || "Not available");
+    console.log("- User Role:", "{{ user_role }}" || "Not available");
+</script>
+{% endblock %}
+
+{% block scripts %}
+<!-- Enhanced Phone Input -->
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/property-setup-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/host_dashboard.js') }}"></script>
+{% endblock %}

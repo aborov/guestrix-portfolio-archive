@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}My Properties{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>My Properties</h1>
+    <p>User: {{ user_id }}</p>
+
+    <a href="{{ url_for('views.property_new') }}" class="btn btn-primary mb-3">Add New Property</a>
+    <a href="{{ url_for('views.property_setup_wizard') }}" class="btn btn-success mb-3 ms-2">
+        <i class="bi bi-magic me-2"></i>Setup New Property
+    </a>
+
+    {% if properties %}
+        <div class="list-group">
+            {% for prop in properties %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ prop.name }}</h5>
+                        <small>ID: {{ prop.id }}</small>
+                    </div>
+                    <p class="mb-1">{{ prop.description }}</p>
+                    <small>Address: {{ prop.address }}</small>
+                    <div class="mt-2">
+                         <a href="{{ url_for('views.property_edit', property_id=prop.id) }}" class="btn btn-sm btn-secondary">Edit Details</a>
+                         <a href="{{ url_for('views.knowledge_base', property_id=prop.id) }}" class="btn btn-sm btn-info">Manage Knowledge Base</a>
+                         <a href="{{ url_for('views.property_reservations', property_id=prop.id) }}" class="btn btn-sm btn-primary">View Reservations</a>
+                         <a href="{{ url_for('views.property_conversations', property_id=prop.id) }}" class="btn btn-sm btn-success">View Conversations</a>
+                         <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ prop.id }}">Delete Property</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Delete Confirmation Modals - moved outside the list for better performance -->
+        {% for prop in properties %}
+            <div class="modal fade" id="deleteModal{{ prop.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ prop.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ prop.id }}">Confirm Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the property "{{ prop.name }}"? This action cannot be undone and will also remove all associated knowledge base items.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{{ url_for('views.property_delete', property_id=prop.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger">Delete Property</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>You haven't added any properties yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize all modals for better performance
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make sure the Bootstrap JS is fully loaded before initializing modals
+        var modals = document.querySelectorAll('.modal');
+        if (window.bootstrap && bootstrap.Modal) {
+            modals.forEach(function(modal) {
+                new bootstrap.Modal(modal);
+            });
+        }
+    });
+</script>
+{% endblock %}

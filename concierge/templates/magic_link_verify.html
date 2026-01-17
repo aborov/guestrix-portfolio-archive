@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}Verify Access - Guestrix{% endblock %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+<link
+  rel="stylesheet"
+  as="style"
+  onload="this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800"
+/>
+
+<style>
+    /* Custom color palette */
+    :root {
+        --persian-green: #2a9d8f;
+        --saffron: #e9c46a;
+        --dark-purple: #161032;
+        --light-cyan: #e0fbfc;
+        --bittersweet: #ee6055;
+    }
+
+    /* Custom Tailwind configuration */
+    .bg-persian-green { background-color: var(--persian-green); }
+    .bg-saffron { background-color: var(--saffron); }
+    .bg-dark-purple { background-color: var(--dark-purple); }
+    .bg-light-cyan { background-color: var(--light-cyan); }
+    .bg-bittersweet { background-color: var(--bittersweet); }
+
+    .text-persian-green { color: var(--persian-green); }
+    .text-saffron { color: var(--saffron); }
+    .text-dark-purple { color: var(--dark-purple); }
+    .text-light-cyan { color: var(--light-cyan); }
+    .text-bittersweet { color: var(--bittersweet); }
+
+    /* Override default body styles */
+    body {
+        font-family: "Plus Jakarta Sans", "Noto Sans", sans-serif !important;
+        background-color: var(--light-cyan) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Login card styles */
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(42, 157, 143, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(42, 157, 143, 0.2);
+    }
+
+    /* Form input styles */
+    .form-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 1.125rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+        color: var(--dark-purple);
+        text-align: center;
+        letter-spacing: 0.25rem;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--persian-green);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    /* Button styles */
+    .btn-primary-custom {
+        background-color: var(--persian-green);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover:not(:disabled) {
+        background-color: #238a7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .btn-primary-custom:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Error message styles */
+    .error-message {
+        background-color: var(--bittersweet);
+        color: white;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    /* Warning message styles */
+    .warning-message {
+        background-color: var(--saffron);
+        color: var(--dark-purple);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+    /* Form text styles */
+    .form-text-custom {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Hide Bootstrap navbar for login page */
+    .navbar {
+        display: none !important;
+    }
+
+    /* Hide Bootstrap container padding */
+    .container.mt-4 {
+        margin-top: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-light-cyan flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header with Logo -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12">
+                    <img src="{{ url_for('static', filename='images/guestrix_logo.svg') }}"
+                         alt="Guestrix Logo"
+                         class="w-full h-full object-contain" />
+                </div>
+                <h1 class="text-dark-purple text-3xl font-bold">Guestrix</h1>
+            </div>
+            <p class="text-dark-purple/70 text-lg">Verify your access to continue</p>
+        </div>
+
+        <!-- Verification Card -->
+        <div class="login-card">
+            <!-- Card Header -->
+            <div class="bg-persian-green text-white p-6">
+                <h2 class="text-xl font-bold mb-0">Verify Access</h2>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <!-- Error/Warning messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {# Filter out host-specific messages on magic link pages - they're not relevant for guests #}
+                            {% set is_host_message = (
+                                'knowledge items generated successfully' in message or
+                                'knowledge items created' in message or
+                                'File uploaded' in message or
+                                'Text added' in message or
+                                'duplicates skipped' in message or
+                                'failed to create knowledge items' in message
+                            ) %}
+                            {% if not (message == 'You have been logged out.' and category == 'info') and not is_host_message %}
+                                <div class="{{ 'error-message' if category == 'error' else 'warning-message' }}">
+                                    {{ message }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% if verification_attempts >= max_attempts %}
+                    <div class="error-message">
+                        <strong>Too many verification attempts.</strong><br>
+                        Please contact your host for assistance.
+                    </div>
+                {% else %}
+                    {% if verification_attempts > 0 %}
+                        <div class="warning-message">
+                            Verification attempt {{ verification_attempts }}/{{ max_attempts }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-6">
+                        <label for="last_4_digits" class="block text-dark-purple font-semibold mb-2">Last 4 digits of phone number</label>
+                        <form method="POST" action="{{ url_for('magic.verify_phone', token=token) }}">
+                            <input
+                                type="text"
+                                id="last_4_digits"
+                                name="last_4_digits"
+                                class="form-input w-full"
+                                maxlength="4"
+                                pattern="[0-9]{4}"
+                                inputmode="numeric"
+                                placeholder="0000"
+                                required
+                                autocomplete="off"
+                            >
+                            <div class="form-text-custom">
+                                {% if is_property_based %}
+                                    Enter the last 4 digits of the phone number used for your reservation at {{ property_name }}
+                                {% else %}
+                                    Enter the last 4 digits of the phone number used for booking
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn-primary-custom w-full mt-4">Verify & Continue</button>
+                        </form>
+                    </div>
+                {% endif %}
+                
+                <!-- <div class="text-center mt-6">
+                    <a href="{{ url_for('magic.show_phone_login', token=token) }}" 
+                       class="text-persian-green hover:text-persian-green/80 font-medium text-sm">
+                        Have an account? Enter your phone number →
+                    </a>
+                </div> -->
+
+                <div class="text-center mt-4">
+                    <div class="form-text-custom">Having trouble? Contact your host for assistance.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-format input to only allow digits
+document.getElementById('last_4_digits').addEventListener('input', function(e) {
+    // Remove any non-digit characters
+    this.value = this.value.replace(/\D/g, '');
+
+    // Limit to 4 digits
+    if (this.value.length > 4) {
+        this.value = this.value.slice(0, 4);
+    }
+});
+
+// Auto-submit when 4 digits are entered
+document.getElementById('last_4_digits').addEventListener('input', function(e) {
+    if (this.value.length === 4) {
+        // Small delay to allow user to see the complete input
+        setTimeout(() => {
+            this.form.submit();
+        }, 500);
+    }
+});
+
+// Focus the input on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('last_4_digits').focus();
+});
+</script>
+{% endblock %}

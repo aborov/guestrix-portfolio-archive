@@ -1,0 +1,33 @@
+{
+  "function": {
+    "waitlistapi": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_waitlistapi_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "waitlistapi"
+        }
+      ]
+    },
+    "AMPLIFY_function_waitlistapi_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "waitlistapi"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "WaitList": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    }
+  }
+}

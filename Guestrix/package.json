@@ -1,0 +1,26 @@
+{
+  "name": "guestrix",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node server.js",
+    "optimize-images": "node scripts/optimize-images.js",
+    "optimize-images-dry": "node scripts/optimize-images.js --dry-run --verbose",
+    "optimize-images-simple": "node scripts/optimize-images-simple.js",
+    "optimize-images-sharp": "node scripts/optimize-images-sharp.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1573.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "glob": "^11.0.1",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "sharp": "^0.34.2"
+  }
+}

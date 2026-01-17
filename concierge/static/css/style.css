@@ -1,0 +1,354 @@
+/* Main Styles for Guestrix */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Utility Classes */
+/* Note: Removed .hidden class to avoid conflicts with Tailwind's responsive classes */
+
+/* Tab Navigation Styles */
+.tab-nav {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab-button {
+    border-color: transparent;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.tab-button:hover {
+    color: #059669;
+    border-color: transparent;
+}
+
+.tab-button.active {
+    color: #059669;
+    border-color: #059669;
+}
+
+/* Tab Content Styles */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #059669;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f9fafb;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f9fafb;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Subtle attention pulse for important inputs */
+@keyframes attentionPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(5, 150, 105, 0.18);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0);
+    }
+}
+
+.attention-pulse {
+    animation: attentionPulse 2s ease-in-out 0s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .attention-pulse {
+        animation: none;
+    }
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: bold;
+    padding: 15px 20px;
+    background-color: #4a6fdc;
+}
+
+.btn-primary {
+    background-color: #4a6fdc;
+    border-color: #4a6fdc;
+}
+
+.btn-primary:hover {
+    background-color: #3a5fc9;
+    border-color: #3a5fc9;
+}
+
+/* Login Page Styles */
+.auth-container {
+    max-width: 500px;
+    margin: 50px auto;
+}
+
+/* Dashboard Styles */
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+.reservation-card {
+    margin-bottom: 20px;
+}
+
+.reservation-card .card-body {
+    padding: 20px;
+}
+
+.reservation-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-confirmed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Chat Styles */
+.chat-input-container {
+    display: flex;
+    margin-top: 15px;
+}
+
+.chat-input-container input {
+    flex-grow: 1;
+    border-radius: 20px 0 0 20px;
+    padding: 10px 15px;
+}
+
+.chat-input-container button {
+    border-radius: 0 20px 20px 0;
+}
+
+/* Knowledge Item Status Badges */
+.badge.badge-pending {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    padding: 5px 10px !important;
+    border-radius: 20px !important;
+    font-weight: normal !important;
+}
+
+.badge.badge-approved {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    padding: 5px 10px !important;
+    border-radius: 20px !important;
+    font-weight: normal !important;
+}
+
+.badge.badge-rejected {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    padding: 5px 10px !important;
+    border-radius: 20px !important;
+    font-weight: normal !important;
+}
+
+.badge.badge-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    padding: 5px 10px !important;
+    border-radius: 20px !important;
+    font-weight: normal !important;
+}
+
+/* Modal Height Adjustments for Short Screens */
+@media (max-height: 930px) {
+    /* Ensure modal fits on shorter screens - 95vh makes better use of space */
+    #property-setup-modal .bg-white.rounded-lg.shadow-xl {
+        max-height: 95vh !important;
+    }
+
+    #setup-step-content {
+        max-height: calc(90vh - 230px) !important;
+    }
+}
+
+@media (max-height: 700px) {
+    /* For very short screens */
+    #property-setup-modal .bg-white.rounded-lg.shadow-xl {
+        max-height: 95vh !important;
+    }
+
+    #setup-step-content {
+        max-height: calc(90vh - 230px) !important;
+    }
+
+    /* Reduce footer padding further on very short screens */
+    #property-setup-modal .modal-footer {
+        padding: 0.5rem 0.5rem !important;
+    }
+}
+
+/* Step Names Responsive Behavior - Ultra-specific CSS to override everything */
+@media screen and (max-width: 500px) {
+    /* Hide step names and show icons on narrow screens - iPhone 14 Pro Max is 430px */
+    div#property-setup-modal .step-progress-text {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    div#property-setup-modal .step-progress-icon {
+        display: inline-block !important;
+        visibility: visible !important;
+    }
+
+    /* Also hide button text and reduce padding */
+    div#property-setup-modal .btn-text {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Hide step indicator completely on narrow screens */
+    div#property-setup-modal #step-indicator {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Reduce padding across the whole modal for better space use */
+    div#property-setup-modal .modal-footer {
+        padding: 1rem !important;
+    }
+
+    div#property-setup-modal .p-6 {
+        padding: 1rem !important;
+    }
+}
+
+/* Very narrow screens - hide step counter to save space */
+@media screen and (max-width: 429px) {
+    div#property-setup-modal .step-counter {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    div#property-setup-modal .step-name-only {
+        display: inline !important;
+        visibility: visible !important;
+    }
+}
+
+@media screen and (max-width: 429px) {
+    /* Hide Add Property button text on very narrow screens */
+    .add-property-text {
+        display: none !important;
+    }
+}
+
+@media screen and (min-width: 501px) {
+    /* Show step names and hide icons on wider screens */
+    div#property-setup-modal .step-progress-text {
+        display: inline !important;
+        visibility: visible !important;
+    }
+
+    div#property-setup-modal .step-progress-icon {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Show button text */
+    div#property-setup-modal .btn-text {
+        display: inline !important;
+        visibility: visible !important;
+    }
+}
+
+
+
+/* Property Card Layout Improvements */
+
+.property-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.property-card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.property-card-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+}

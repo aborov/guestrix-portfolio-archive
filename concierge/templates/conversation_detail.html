@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation Detail</title>
+    <!-- Include Bootstrap CSS for consistent styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Include Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global styles for consistent fonts */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #333;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        /* Message Bubbles */
+        .message-bubble {
+            border-radius: 18px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            max-width: 80%;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .message-bubble.user {
+            background-color: #f1f0f0;
+            margin-right: auto; /* Changed from margin-left: auto */
+            border-bottom-left-radius: 5px; /* Changed from border-bottom-right-radius */
+        }
+        .message-bubble.assistant {
+            background-color: #e3f2fd;
+            margin-left: auto; /* Changed from margin-right: auto */
+            border-bottom-right-radius: 5px; /* Changed from border-bottom-left-radius */
+        }
+
+        /* Message Metadata */
+        .message-time {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        .message-sender {
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        /* Conversation container */
+        .conversation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Content area */
+        .conversation-content {
+            padding: 20px;
+        }
+
+        /* Conversation messages */
+        .conversation-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Message alignment */
+        .message-row {
+            display: flex;
+            flex-direction: column;
+        }
+        .message-row.user {
+            align-items: flex-start; /* Changed from flex-end */
+        }
+        .message-row.assistant {
+            align-items: flex-end; /* Changed from flex-start */
+        }
+
+        /* Header styling */
+        .conversation-header {
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Reservation Info Section */
+        .reservation-info {
+            background-color: #e9f7fe;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0d6efd;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6610f2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Debug info styling */
+        .debug-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6c757d;
+            font-size: 0.85rem;
+        }
+
+        /* Tool call notes */
+        .tool-call-note {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 5px;
+            padding: 3px 6px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 2px solid #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="conversation-container">
+        <div class="conversation-header {% if conversation.channel == 'voice_call' %}bg-danger{% else %}bg-primary{% endif %} text-white p-3 rounded-top">
+            <h3 class="mb-2">{{ conversation.guest_name|default('Guest', true) }}</h3>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-white text-{{ conversation.channel == 'voice_call' and 'danger' or 'primary' }}">
+                        {{ conversation.channel|replace('_', ' ')|title }}
+                    </span>
+                    <span class="text-white-50 ms-2">{{ conversation.start_time|default('No timestamp', true)|replace('T', ' ')|truncate(16, True, '') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="conversation-content">
+            <!-- Reservation Info Section -->
+            {% if conversation.reservation %}
+            <div class="reservation-info mb-4">
+                <h5 class="mb-3"><i class="bi bi-calendar-check"></i> Reservation Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Guest:</strong> {{ conversation.reservation.guestName|default(conversation.guest_name, true)|default('N/A', true) }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ conversation.reservation.guestPhone|default(conversation.guest_phone, true)|default('N/A', true) }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Check-in:</strong> 
+                            <span class="format-date" data-date="{{ conversation.reservation.checkInDate }}">
+                                {{ conversation.reservation.checkInDate|default('N/A', true) }}
+                            </span>
+                        </p>
+                        <p class="mb-1"><strong>Check-out:</strong> 
+                            <span class="format-date" data-date="{{ conversation.reservation.checkOutDate }}">
+                                {{ conversation.reservation.checkOutDate|default('N/A', true) }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Show conversation info even without reservation -->
+            {% if conversation.guest_phone %}
+            <div class="reservation-info mb-4">
+                <h5 class="mb-3"><i class="bi bi-person-circle"></i> Guest Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Guest:</strong> {{ conversation.guest_name|default('N/A', true) }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ conversation.guest_phone|default('N/A', true) }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- Summary Section -->
+            {% if conversation.summary %}
+            <div class="summary-section mb-4">
+                <h5 class="mb-2"><i class="bi bi-file-text"></i> Conversation Summary</h5>
+                <p>{{ conversation.summary|replace('\n', '<br>')|safe }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Debug info -->
+            <div class="debug-info">
+                <h5>Conversation Information</h5>
+                <p><strong>ID:</strong> {{ conversation.id|default('Not available', true) }}</p>
+                <p><strong>Channel:</strong> {{ conversation.channel|default('Not available', true) }}</p>
+                <p><strong>Message Count:</strong> {{ conversation.message_count|default('0', true) }}</p>
+                <p><strong>Has Messages:</strong> {{ conversation.messages is defined and conversation.messages|length > 0 }}</p>
+            </div>
+
+            {% if conversation.messages and conversation.messages|length > 0 %}
+        <div class="conversation-messages">
+            {% for message in conversation.messages %}
+            {% set role = message.role|default('unknown', true) %}
+            {% set text = message.text|default('No message content', true) %}
+
+            {% set has_tool_call = false %}
+            {% if role == 'assistant' and (
+                'I searched for' in text or
+                'I found information' in text or
+                'According to my search' in text
+            ) %}
+                {% set has_tool_call = true %}
+            {% endif %}
+
+            <div class="message-row {{ role }}">
+                <div class="message-bubble {{ role }}">
+                    {{ text|replace('\n', '<br>')|safe }}
+
+                    {% if has_tool_call %}
+                    <div class="tool-call-note">
+                        <i class="bi bi-search"></i> Used search to find information
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="message-time">
+                    <span class="message-sender">
+                        {% if role == 'user' %}
+                            {{ conversation.guest_name|default('Guest', true) }}
+                        {% else %}
+                            Staycee
+                        {% endif %}
+                    </span>
+                    {% if message.timestamp %}
+                    • {{ message.timestamp|replace('T', ' ')|truncate(16, True, '') }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No messages in this conversation.
+        </div>
+        {% endif %}
+        </div> <!-- Close conversation-content -->
+    </div> <!-- Close conversation-container -->
+
+    <!-- Load date utilities -->
+    <script src="{{ url_for('static', filename='js/date_utils.js') }}"></script>
+    
+    <script>
+    // Function to format dates using centralized date utilities
+    function formatDatesInConversation() {
+        // Check if DateUtils is available
+        if (typeof window.DateUtils === 'undefined') {
+            console.log('DateUtils not loaded yet, will format dates when available');
+            return;
+        }
+        
+        const dateElements = document.querySelectorAll('.format-date');
+        dateElements.forEach(element => {
+            const dateStr = element.getAttribute('data-date');
+            if (dateStr && dateStr !== 'N/A' && dateStr !== '') {
+                try {
+                    const formattedDate = window.DateUtils.formatDateForDisplay(dateStr, 'short');
+                    if (formattedDate !== 'Invalid Date') {
+                        element.textContent = formattedDate;
+                    }
+                } catch (error) {
+                    console.warn('Error formatting date:', dateStr, error);
+                }
+            }
+        });
+    }
+
+    // Format dates when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        formatDatesInConversation();
+    });
+
+    // Format dates when DateUtils becomes available
+    if (typeof window.DateUtils === 'undefined') {
+        const checkDateUtils = setInterval(function() {
+            if (typeof window.DateUtils !== 'undefined') {
+                clearInterval(checkDateUtils);
+                formatDatesInConversation();
+            }
+        }, 100);
+    }
+    </script>
+</body>
+</html>

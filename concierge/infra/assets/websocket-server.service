@@ -1,0 +1,18 @@
+[Unit]
+Description=Telnyx WebSocket Server for Gemini Live
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/app
+Environment=PATH=/app/venv/bin
+Environment=PYTHONPATH=/app
+Environment=WEBSOCKET_HOST=0.0.0.0
+Environment=WEBSOCKET_PORT=8080
+ExecStart=/app/venv/bin/python -m websocket_server.server
+Restart=always
+StandardOutput=append:/var/log/websocket-server.log
+StandardError=append:/var/log/websocket-server.error.log
+
+[Install]
+WantedBy=multi-user.target
