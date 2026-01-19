@@ -5,19 +5,20 @@
 > **Note:** This repository is a sanitized code archive of GuestrixAI, a startup developed in 2025. It is presented here for non-commercial portfolio demonstration purposes. Some proprietary assets and keys have been removed.
 
 ## Project Overview
-GuestrixAI was designed to solve a critical problem in the short-term rental market: providing immediate, context-aware support to guests without active host intervention. The system allowed guests to interact via voice or text with an AI agent capable of answering property-specific questions (e.g., "How do I turn on the heater?") in real-time.
+GuestrixAI was designed to solve a critical problem in the short-term rental market: providing immediate, context-aware support to guests. The system enabled guests to speak naturally with an AI agent that possessed deep knowledge of the specific property (e.g., "How do I turn on the heater?").
 
 ## Technical Architecture
-* **Backend:** Python (Flask)
-* **Real-Time Communication:** Flask-SocketIO (WebSockets)
-* **AI Engine:** Google Gemini (via `google-genai` SDK)
-* **Frontend:** JavaScript (Browser-based audio streaming)
-* **Data/Context:** Firestore (NoSQL) for property knowledge bases
+* **Frontend Voice:** JavaScript (Web Audio API + ScriptProcessor) for raw PCM capture.
+* **Real-Time Transport:**
+    * **Voice:** Direct WebSocket connection from Client to Gemini Live API (to minimize latency).
+    * **State/Chat:** Socket.IO for session management and fallback text chat.
+* **Backend:** Python (Flask) for orchestration and Auth.
+* **RAG Engine:** Firestore Vector Search (embedding-based retrieval).
 
 ## Key Features (Archive Status)
-* **Bi-directional Audio Streaming:** Implemented logic to handle audio input streaming to the LLM and playback of generated audio responses.
-* **Latency Management:** Custom queue management to handle network backpressure during voice sessions.
-* **Contextual RAG:** Logic to retrieve property-specific details and inject them into the LLM's system prompt to reduce hallucinations.
+* **Hybrid Latency Architecture:** Decoupled audio streaming (Direct-to-API) from state management (Server-based) to ensure sub-second voice response times.
+* **Vector-Based RAG:** Implemented a `find_similar_knowledge_items` pipeline that retrieves property metadata from Firestore and injects it into the system prompt context window.
+* **Resilient Audio:** Custom `AudioContext` logic to handle browser-specific microphone constraints and stream stability.
 
 ## Status
 The project was sunset in late 2025 due to a pivot in market strategy. This codebase represents the engineering work completed during the alpha prototyping phase.
